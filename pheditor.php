@@ -469,7 +469,10 @@ $(function(){
 
         var file = $(this).attr("data-file"),
             _this = $(this);
-
+		if(event.ctrlKey){
+			window.open("<?=$_SERVER['PHP_SELF']?>#"+file, "_blank");
+			return;
+		}
         window.location.hash = file;
 
         $.post("<?=$_SERVER['PHP_SELF']?>", { action: "open", file: encodeURIComponent(file) }, function(data){
@@ -510,7 +513,10 @@ $(function(){
 
         var dir = $(this).attr("data-dir"),
             _this = $(this);
-
+		if(event.ctrlKey){
+			window.open("<?=$_SERVER['PHP_SELF']?>#"+dir, "_blank");
+			return;
+		}
         window.location.hash = dir;
 
         editor.setValue("");
