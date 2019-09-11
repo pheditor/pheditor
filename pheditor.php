@@ -10,6 +10,8 @@
 
 define('PASSWORD', 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec');
 define('DS', DIRECTORY_SEPARATOR);
+define('BLOCKED_UPLOAD_FILES', '');
+define('BLOCKED_FILE_NAMES','vendor');
 define('MAIN_DIR', __DIR__);
 define('VERSION', '2.0.0');
 define('LOG_FILE', MAIN_DIR . DS . '.phedlog');
@@ -26,7 +28,25 @@ define('PATTERN_DIRECTORIES', '/^((?!backup).)*$/i'); // empy means no pattern
 if (empty(ACCESS_IP) === false && ACCESS_IP != $_SERVER['REMOTE_ADDR']) {
     die('Your IP address is not allowed to access this page.');
 }
-
+function generateRandomString($length = 10) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}
+if(empty(RANDOM_STRING)){
+		$contents = file(__FILE__);
+		foreach ($contents as $key => $line) {
+			if (strpos($line, 'define(\'RANDOM_STRING\'') !== false) {
+				$contents[$key] = "define('RANDOM_STRING', '" . generateRandomString(25). "');\n";
+				break;
+			}
+		}
+		file_put_contents(__FILE__, implode($contents));	
+}
 if (file_exists(LOG_FILE)) {
     $log = unserialize(file_get_contents(LOG_FILE));
 
@@ -53,13 +73,13 @@ if (file_exists(LOG_FILE)) {
 }
 
 session_set_cookie_params(1440, dirname($_SERVER['REQUEST_URI']));
-session_name('pheditor');
+session_name('pheditor'.RANDOM_STRING);
 session_start();
 
-if (empty(PASSWORD) === false && (isset($_SESSION['pheditor_admin']) === false || $_SESSION['pheditor_admin'] !== true)) {
+if (empty(PASSWORD) === false && (isset($_SESSION['pheditor_admin'.RANDOM_STRING]) === false || $_SESSION['pheditor_admin'.RANDOM_STRING] !== true)) {
     if (isset($_POST['pheditor_password']) && empty($_POST['pheditor_password']) === false) {
         if (hash('sha512', $_POST['pheditor_password']) === PASSWORD) {
-            $_SESSION['pheditor_admin'] = true;
+            $_SESSION['pheditor_admin'.RANDOM_STRING] = true;
 
             redirect();
         } else {
@@ -82,7 +102,7 @@ if (empty(PASSWORD) === false && (isset($_SESSION['pheditor_admin']) === false |
 }
 
 if (isset($_GET['logout'])) {
-    unset($_SESSION['pheditor_admin']);
+    unset($_SESSION['pheditor_admin'.RANDOM_STRING]);
 
     redirect();
 }
@@ -273,14 +293,20 @@ function files($dir, $first = true)
     if ($first === true) {
         $data .= '<ul><li data-jstree=\'{ "opened" : true }\'><a href="#/" class="open-dir" data-dir="/">' . basename($dir) . '</a>';
     }
-
+	$blocked_names = empty(BLOCKED_FILE_NAMES) ? [] : explode(',', BLOCKED_FILE_NAMES);
     $data .= '<ul class="files">';
     $files = array_slice(scandir($dir), 2);
 
     asort($files);
 
     foreach ($files as $key => $file) {
-        if ((SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__) || (SHOW_HIDDEN_FILES === false && substr($file, 0, 1) === '.')) {
+		$in_blocked = false;
+		foreach($blocked_names as $name) {
+			if(strrpos($dir, $name) !== false || strrpos($file, $name)){
+				$in_blocked = true;
+			}
+		}
+        if ((SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__) || (SHOW_HIDDEN_FILES === false && substr($file, 0, 1) === '.')|| $in_blocked === true) {
             continue;
         }
 
@@ -452,7 +478,10 @@ $(function(){
 
     $("#files > div").jstree({
         state: { key: "pheditor" },
-        plugins: [ "state" ]
+        plugins: [ "state" ],
+        "core" : {
+            "multiple" : false
+        }
     });
 
     $("#files").on("dblclick", "a[data-file]", function(event){
@@ -725,7 +754,11 @@ $(function(){
         $(window).trigger("hashchange");
     }
 
-    $("#files").on("click", ".jstree-anchor", function(){
+    $("#files").on("click", ".jstree-anchor", function(e){
+        if(e.ctrlKey){
+            window.open("<?=$_SERVER['PHP_SELF']?>#"+$(this).attr("href"));
+            return;
+        }
         location.href = $(this).attr("href");
     });
 });
