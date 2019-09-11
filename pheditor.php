@@ -21,6 +21,7 @@ define('ACCESS_IP', '');
 define('HISTORY_PATH', MAIN_DIR . DS . '.phedhistory');
 define('MAX_HISTORY_FILES', 5);
 define('WORD_WRAP', true);
+define('RANDOM_STRING','');
 define('PERMISSIONS', 'newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword'); // empty means all
 define('PATTERN_FILES', '/^(.*)\.(txt|php|htm|html|js|css|tpl|md|xml|json)$/i'); // empty means no pattern
 define('PATTERN_DIRECTORIES', '/^((?!backup).)*$/i'); // empy means no pattern
