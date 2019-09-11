@@ -10,8 +10,7 @@
 
 define('PASSWORD', 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec');
 define('DS', DIRECTORY_SEPARATOR);
-define('BLOCKED_UPLOAD_FILES', '');
-define('BLOCKED_FILE_NAMES','vendor');
+define('BLOCKED_DIR_NAMES','vendor');
 define('MAIN_DIR', __DIR__);
 define('VERSION', '2.0.0');
 define('LOG_FILE', MAIN_DIR . DS . '.phedlog');
@@ -294,7 +293,7 @@ function files($dir, $first = true)
     if ($first === true) {
         $data .= '<ul><li data-jstree=\'{ "opened" : true }\'><a href="#/" class="open-dir" data-dir="/">' . basename($dir) . '</a>';
     }
-	$blocked_names = empty(BLOCKED_FILE_NAMES) ? [] : explode(',', BLOCKED_FILE_NAMES);
+	$blocked_names = empty(BLOCKED_DIR_NAMES) ? [] : explode(',', BLOCKED_DIR_NAMES);
     $data .= '<ul class="files">';
     $files = array_slice(scandir($dir), 2);
 
