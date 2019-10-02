@@ -283,6 +283,9 @@ function files($dir, $first = true)
 
     asort($files);
 
+    $files_html = '';
+    $dirs_html = '';
+
     foreach ($files as $key => $file) {
         if ((SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__) || (SHOW_HIDDEN_FILES === false && substr($file, 0, 1) === '.')) {
             continue;
@@ -292,14 +295,16 @@ function files($dir, $first = true)
             $dir_path = str_replace(MAIN_DIR . DS, '', $dir . DS . $file);
             $dir_path = str_replace("\\", "/", $dir_path);
 
-            $data .= '<li class="dir"><a href="#/' . $dir_path . '/" class="open-dir" data-dir="/' . $dir_path . '/">' . $file . '</a>' . files($dir . DS . $file, false) . '</li>';
+            $dirs_html .= '<li class="dir"><a href="#/' . $dir_path . '/" class="open-dir" data-dir="/' . $dir_path . '/">' . $file . '</a>' . files($dir . DS . $file, false) . '</li>';
         } else if (empty(PATTERN_FILES) || preg_match(PATTERN_FILES, $file)) {
             $file_path = str_replace(MAIN_DIR . DS, '', $dir . DS . $file);
             $file_path = str_replace("\\", "/", $file_path);
 
-            $data .= '<li class="file ' . (is_writable($file_path) ? 'editable' : null) . '" data-jstree=\'{ "icon" : "jstree-file" }\'><a href="#/' . $file_path . '" data-file="/' . $file_path . '" class="open-file">' . $file . '</a></li>';
+            $files_html .= '<li class="file ' . (is_writable($file_path) ? 'editable' : null) . '" data-jstree=\'{ "icon" : "jstree-file" }\'><a href="#/' . $file_path . '" data-file="/' . $file_path . '" class="open-file">' . $file . '</a></li>';
         }
     }
+
+    $data .= $dirs_html . $files_html;
 
     $data .= '</ul>';
 
