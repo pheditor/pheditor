@@ -509,6 +509,10 @@ $(function(){
         lint: true
     });
 
+    editor.on("change", function(){
+        window.dataChanged = true;
+    });
+
     $("#files > div").jstree({
         state: { key: "pheditor" },
         plugins: [ "state" ]
@@ -742,12 +746,23 @@ $(function(){
     $(window).on("hashchange", function(){
         var hash = window.location.hash.substring(1);
 
+        if (window.fileLoaded && window.dataChanged) {
+            if (confirm("Discard changes?")) {
+                window.dataChanged = window.fileLoaded = false;
+
+                $(window).trigger("hashchange");
+            } else {
+                return;
+            }
+        }
+
         if (hash.length > 0) {
             if (hash.substring(hash.length - 1) == "/") {
                 var dir = $("a[data-dir='" + hash + "']");
 
                 if (dir.length > 0) {
                     editor.setValue("");
+                    window.fileLoaded = false;
                     $("#path").html(hash);
                     $(".dropdown").find(".save, .reopen, .close").addClass("disabled");
                     $(".dropdown").find(".delete, .rename").removeClass("disabled");
@@ -762,6 +777,9 @@ $(function(){
                         editor.setValue(data);
 
                         editor.setOption("mode", "application/x-httpd-php");
+
+                        window.fileLoaded = true;
+                        window.dataChanged = false;
 
                         if (hash.lastIndexOf(".") > 0) {
                             var extension = hash.substring(hash.lastIndexOf(".") + 1);
