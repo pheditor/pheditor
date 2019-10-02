@@ -498,12 +498,6 @@ function reloadFiles(hash) {
     });
 }
 
-function sha512(string) {
-    return crypto.subtle.digest("SHA-512", new TextEncoder("UTF-8").encode(string)).then(buffer => {
-        return Array.prototype.map.call(new Uint8Array(buffer), x => (("00" + x.toString(16)).slice(-2))).join("");
-    });
-}
-
 $(function(){
     editor = CodeMirror.fromTextArea($("#editor")[0], {
         lineNumbers: true,
@@ -609,10 +603,6 @@ $(function(){
             data = editor.getValue();
 
         if (path.length > 0) {
-            sha512(data).then(function(digest){
-                $("#digest").val(digest);
-            });
-
             $.post("<?=$_SERVER['PHP_SELF']?>", { action: "save", file: path, data: data }, function(data){
                 data = data.split("|");
 
@@ -750,58 +740,45 @@ $(function(){
     });
 
     $(window).on("hashchange", function(){
-        var hash = window.location.hash.substring(1),
-            data = editor.getValue();
+        var hash = window.location.hash.substring(1);
 
         if (hash.length > 0) {
-            sha512(data).then(function(digest){
-                if ($("#digest").val().length < 1 || $("#digest").val() == digest) {
-                    if (hash.substring(hash.length - 1) == "/") {
-                        var dir = $("a[data-dir='" + hash + "']");
+            if (hash.substring(hash.length - 1) == "/") {
+                var dir = $("a[data-dir='" + hash + "']");
 
-                        if (dir.length > 0) {
-                            editor.setValue("");
-                            $("#digest").val("");
-                            $("#path").html(hash);
-                            $(".dropdown").find(".save, .reopen, .close").addClass("disabled");
-                            $(".dropdown").find(".delete, .rename").removeClass("disabled");
-                        }
-                    } else {
-                        var file = $("a[data-file='" + hash + "']");
-
-                        if (file.length > 0) {
-                            $("#loading").fadeIn(250);
-
-                            $.post("<?=$_SERVER['PHP_SELF']?>", { action: "open", file: encodeURIComponent(hash) }, function(data){
-                                editor.setValue(data);
-                                editor.setOption("mode", "application/x-httpd-php");
-
-                                sha512(data).then(function(digest){
-                                    $("#digest").val(digest);
-                                });
-
-                                if (hash.lastIndexOf(".") > 0) {
-                                    var extension = hash.substring(hash.lastIndexOf(".") + 1);
-
-                                    if (modes[extension]) {
-                                        editor.setOption("mode", modes[extension]);
-                                    }
-                                }
-
-                                $("#editor").attr("data-file", hash);
-                                $("#path").html(hash).hide().fadeIn(250);
-                                $(".dropdown").find(".save, .delete, .rename, .reopen, .close").removeClass("disabled");
-
-                                $("#loading").fadeOut(250);
-                            });
-                        }
-                    }
-                } else if (confirm("Discard changes?")) {
-                    $("#digest").val("");
-
-                    $(window).trigger("hashchange");
+                if (dir.length > 0) {
+                    editor.setValue("");
+                    $("#path").html(hash);
+                    $(".dropdown").find(".save, .reopen, .close").addClass("disabled");
+                    $(".dropdown").find(".delete, .rename").removeClass("disabled");
                 }
-            });
+            } else {
+                var file = $("a[data-file='" + hash + "']");
+
+                if (file.length > 0) {
+                    $("#loading").fadeIn(250);
+
+                    $.post("<?=$_SERVER['PHP_SELF']?>", { action: "open", file: encodeURIComponent(hash) }, function(data){
+                        editor.setValue(data);
+
+                        editor.setOption("mode", "application/x-httpd-php");
+
+                        if (hash.lastIndexOf(".") > 0) {
+                            var extension = hash.substring(hash.lastIndexOf(".") + 1);
+
+                            if (modes[extension]) {
+                                editor.setOption("mode", modes[extension]);
+                            }
+                        }
+
+                        $("#editor").attr("data-file", hash);
+                        $("#path").html(hash).hide().fadeIn(250);
+                        $(".dropdown").find(".save, .delete, .rename, .reopen, .close").removeClass("disabled");
+
+                        $("#loading").fadeOut(250);
+                    });
+                }
+            }
         }
     });
 
@@ -901,7 +878,6 @@ $(function(){
                         </div>
                     </div>
                     <textarea id="editor" data-file="" class="form-control"></textarea>
-                    <input id="digest" type="hidden" readonly>
                 </div>
             </div>
         </div>
