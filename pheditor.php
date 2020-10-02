@@ -11,12 +11,14 @@
 define('PASSWORD', 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec');
 define('DS', DIRECTORY_SEPARATOR);
 define('MAIN_DIR', __DIR__);
+//define('MAIN_DIR', dirname(__DIR__, 1));	// Use this for using One (1) level up
 define('VERSION', '2.0.0');
-define('LOG_FILE', MAIN_DIR . DS . '.phedlog');
+define('LOG_FILE', __DIR__ . DS . '.phedlog');
 define('SHOW_PHP_SELF', false);
+define('SHOW_PHP_SELF_DIR', false);
 define('SHOW_HIDDEN_FILES', false);
 define('ACCESS_IP', '');
-define('HISTORY_PATH', MAIN_DIR . DS . '.phedhistory');
+define('HISTORY_PATH', __DIR__ . DS . '.phedhistory');
 define('MAX_HISTORY_FILES', 5);
 define('WORD_WRAP', true);
 define('PERMISSIONS', 'newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword,uploadfile,terminal'); // empty means all
@@ -380,23 +382,26 @@ function files($dir, $first = true)
 
 	asort($files);
 
+	$files_html = '';
+	$dirs_html = '';
+
 	foreach ($files as $key => $file) {
-		if ((SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__) || (SHOW_HIDDEN_FILES === false && substr($file, 0, 1) === '.')) {
+		if ((SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__) || (SHOW_HIDDEN_FILES === false && substr($file, 0, 1) === '.') || (SHOW_PHP_SELF_DIR === false && $dir . DS . $file == __DIR__)) {
 			continue;
 		}
 
 		if (is_dir($dir . DS . $file) && (empty(PATTERN_DIRECTORIES) || preg_match(PATTERN_DIRECTORIES, $file))) {
 			$dir_path = str_replace(MAIN_DIR . DS, '', $dir . DS . $file);
 
-			$data .= '<li class="dir"><a href="#/' . $dir_path . '/" class="open-dir" data-dir="/' . $dir_path . '/">' . $file . '</a>' . files($dir . DS . $file, false) . '</li>';
+			$dirs_html .= '<li class="dir"><a href="#/' . $dir_path . '/" class="open-dir" data-dir="/' . $dir_path . '/">' . $file . '</a>' . files($dir . DS . $file, false) . '</li>';
 		} else if (empty(PATTERN_FILES) || preg_match(PATTERN_FILES, $file)) {
 			$file_path = str_replace(MAIN_DIR . DS, '', $dir . DS . $file);
 
-			$data .= '<li class="file ' . (is_writable($file_path) ? 'editable' : null) . '" data-jstree=\'{ "icon" : "jstree-file" }\'><a href="#/' . $file_path . '" data-file="/' . $file_path . '" class="open-file">' . $file . '</a></li>';
+			$files_html .= '<li class="file ' . (is_writable($file_path) ? 'editable' : null) . '" data-jstree=\'{ "icon" : "jstree-file" }\'><a href="#/' . $file_path . '" data-file="/' . $file_path . '" class="open-file">' . $file . '</a></li>';
 		}
 	}
 
-	$data .= '</ul>';
+	$data .= $dirs_html . $files_html .'</ul>';
 
 	if ($first === true) {
 		$data .= '</li></ul>';
