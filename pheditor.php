@@ -144,7 +144,7 @@ if (isset($_GET['path'])) {
 				'icon' => 'far fa-file',
 				'a_attr' => [
 					'href' => '#' . $file_path,
-					'data-file' => $file_path
+					'data-file' => urlencode($file_path)
 				],
 				'state' => [
 					'selected' => false,
@@ -193,12 +193,13 @@ if (isset($_GET['path'])) {
 	switch ($_POST['action']) {
 		case 'open':
 			$_POST['file'] = urldecode($_POST['file']);
-
+			// die(MAIN_DIR . $_POST['file']);
 			if (isset($_POST['file']) && file_exists(MAIN_DIR . $_POST['file'])) {
 				die(json_success('OK', [
 					'data' => file_get_contents(MAIN_DIR . $_POST['file']),
 				]));
 			}
+			
 			break;
 
 		case 'save':
@@ -868,7 +869,7 @@ function json_success($message, $params = [])
 					var hash = window.location.hash;
 					if (hash.indexOf(b.node.a_attr.href) == 0 && hash.replace(b.node.a_attr.href, "").indexOf("/") < 0) {
 						setTimeout(function() {
-							$("[data-file='" + hash.substring(1) + "']").click();
+							$("[data-file='" + encodeURIComponent(hash.substring(1)) + "']").click();
 
 							$(window).trigger("hashchange");
 						}, 250);
@@ -908,7 +909,7 @@ function json_success($message, $params = [])
 				}
 
 				?>
-				window.open("<?= $base_dir ?>" + $(this).attr("data-file"));
+				window.open("<?= $base_dir ?>" + decodeURIComponent($(this).attr("data-file")));
 			});
 
 			$("a.change-password").click(function() {
@@ -950,7 +951,7 @@ function json_success($message, $params = [])
 								$("#files > div").jstree("refresh");
 
 								setTimeout(function() {
-									$("[data-file='" + file + "']").click();
+									$("[data-file='" + encodeURIComponent(file) + "']").click();
 								}, 250);
 							}
 						});
@@ -1176,9 +1177,11 @@ function json_success($message, $params = [])
 								$(".dropdown").find(".delete, .rename").removeClass("disabled");
 							}
 						} else {
-							var file = $("a[data-file='" + hash + "']");
-
+							// console.log(hash);
+							var file = $("a[data-file='" + encodeURIComponent(hash) + "']");
+							// console.log(file);
 							if (file.length > 0) {
+								// console.log(file);
 								$("#loading").fadeIn(250);
 
 								$.post("<?= $_SERVER['PHP_SELF'] ?>", {
@@ -1204,7 +1207,7 @@ function json_success($message, $params = [])
 										}
 									}
 
-									$("#editor").attr("data-file", hash);
+									$("#editor").attr("data-file", encodeURIComponent(hash));
 									$("#path").html(hash).hide().fadeIn(250);
 									$(".dropdown").find(".save, .delete, .rename, .reopen, .close").removeClass("disabled");
 
