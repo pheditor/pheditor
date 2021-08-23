@@ -193,13 +193,11 @@ if (isset($_GET['path'])) {
 	switch ($_POST['action']) {
 		case 'open':
 			$_POST['file'] = urldecode($_POST['file']);
-			// die(MAIN_DIR . $_POST['file']);
 			if (isset($_POST['file']) && file_exists(MAIN_DIR . $_POST['file'])) {
 				die(json_success('OK', [
 					'data' => file_get_contents(MAIN_DIR . $_POST['file']),
 				]));
 			}
-			
 			break;
 
 		case 'save':
@@ -1177,11 +1175,8 @@ function json_success($message, $params = [])
 								$(".dropdown").find(".delete, .rename").removeClass("disabled");
 							}
 						} else {
-							// console.log(hash);
 							var file = $("a[data-file='" + encodeURIComponent(hash) + "']");
-							// console.log(file);
 							if (file.length > 0) {
-								// console.log(file);
 								$("#loading").fadeIn(250);
 
 								$.post("<?= $_SERVER['PHP_SELF'] ?>", {
