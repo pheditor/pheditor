@@ -208,7 +208,7 @@ if (isset($_GET['path'])) {
 
 	foreach ($files as $key => $file) {
 		if (substr($file, 0, 1) === '.' || (SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__)
-            || (SHOW_HIDDEN_FILES === false && in_array($path_name . DS . $file, HIDDEN_FILES))) {
+            || (SHOW_HIDDEN_FILES === false && in_array(strlen($path_name) > 0 ? $path_name . DS . $file : $file, HIDDEN_FILES))) {
 			continue;
 		}
 
