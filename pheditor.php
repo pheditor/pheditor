@@ -15,6 +15,7 @@ define('VERSION', '2.0.0');
 define('LOG_FILE', MAIN_DIR . DS . '.phedlog');
 define('SHOW_PHP_SELF', false);
 define('SHOW_HIDDEN_FILES', false);
+define('HIDDEN_FILES', ['README.md', 'test' . DS . 'testing1.txt']);
 define('ACCESS_IP', '');
 define('HISTORY_PATH', MAIN_DIR . DS . '.phedhistory');
 define('MAX_HISTORY_FILES', 5);
@@ -193,7 +194,8 @@ if (count($permissions) < 1) {
 if (isset($_GET['path'])) {
 	header('Content-Type: application/json');
 
-	$dir = realpath(rtrim(MAIN_DIR . DS . trim($_GET['path'], '/'), '/'));
+    $path_name = trim($_GET['path'], '/');
+    $dir = realpath(rtrim(MAIN_DIR . DS . $path_name, '/'));
 
 	if ($dir === false || check_path($dir) !== true) {
 		die('[]');
@@ -205,7 +207,8 @@ if (isset($_GET['path'])) {
 	asort($files);
 
 	foreach ($files as $key => $file) {
-		if (substr($file, 0, 1) === '.' || (SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__)) {
+		if (substr($file, 0, 1) === '.' || (SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__)
+            || (SHOW_HIDDEN_FILES === false && in_array($path_name . DS . $file, HIDDEN_FILES))) {
 			continue;
 		}
 
