@@ -1,0 +1,22 @@
+{
+              
+                    "main_dev" : {
+                            "password_hash":"hgfzxiygBfczxgcvcgxvcvcxvgc",
+                            "restricted_files":{},
+                            "SHOW_PHP_SELF": true,
+                            "SHOW_HIDDEN_FILES" : true
+                            
+                            
+                        
+                            },
+                    "another_deev":{
+                                "password_hash" : "1a67359632246a9c51d08540816720cef1cd4b5d61ba781015632a012749d646540865b348db1d4cefccf2d6f17ba249a832aa5b6gd727ee763f4a830b0ddf71",
+                                "restricted_files" :  ["COPYRIGHT",".env","private_file.php,"private_folder"],
+                            "SHOW_PHP_SELF": false,
+                            "SHOW_HIDDEN_FILES" : false
+                    
+                        }
+                    
+                
+                    
+}
