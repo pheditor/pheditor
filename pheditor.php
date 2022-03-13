@@ -207,7 +207,7 @@ if (isset($_GET['path'])) {
 	asort($files);
 
 	foreach ($files as $key => $file) {
-		if (substr($file, 0, 1) === '.' || (SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__)) {
+		if (substr($file, 0, 1) === '.' || (SHOW_PHP_SELF === false && $dir . DS . $file == __FILE__) || (SHOW_HIDDEN_FILES === false && substr($file, 0, 1) === '.')) {
 			continue;
 		}
 
