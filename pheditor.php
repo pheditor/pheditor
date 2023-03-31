@@ -977,7 +977,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 				mode: "application/x-httpd-php",
 				indentUnit: 4,
 				indentWithTabs: true,
-				lineWrapping: <?= WORD_WRAP ?>,
+				lineWrapping: <?= WORD_WRAP ? 'true' : 'false' ?>,
 				gutters: ["CodeMirror-lint-markers"],
 				lint: true
 			});
