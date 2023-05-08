@@ -899,6 +899,16 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 			border: 0;
 		}
 
+		body.dark-mode input[type=text] {
+			background-color: #272822;
+			border-color: #272822;
+			color: #f8f8f2;
+		}
+
+		body.dark-mode input[type=text]:focus {
+			box-shadow: none;
+		}
+
 		.help-button {
 			margin-right: 10px;
 		}
@@ -911,6 +921,23 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 			color: inherit;
 			font-weight: bold;
 			text-decoration: underline;
+		}
+
+		#search {
+			position: relative;
+		}
+
+		#search .search-input {
+			padding-right: 32px;
+		}
+
+		#search .search-clear {
+			position: absolute;
+			right: 2px;
+			top: 1px;
+			color: #555;
+			cursor: pointer;
+			padding: 10px;
 		}
 	</style>
 
@@ -1219,11 +1246,11 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 			$(window).resize(function() {
 				if (window.innerWidth >= 720) {
 					var terminalHeight = $("#terminal").length > 0 ? $("#terminal").height() : 0,
-						height = window.innerHeight - $(".CodeMirror")[0].getBoundingClientRect().top - terminalHeight - 30;
+						height = window.innerHeight - $(".CodeMirror")[0].getBoundingClientRect().top - terminalHeight - 30,
+						searchHeight = $('#search').outerHeight(true) + 30;
 
-					$("#files, .CodeMirror").css({
-						"height": height + "px"
-					});
+					$("#files").css("height", (height - searchHeight) + "px");
+					$(".CodeMirror").css("height", (height - 15) + "px");
 				} else {
 					$("#files > div, .CodeMirror").css({
 						"height": ""
@@ -1632,6 +1659,43 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 			$(".help-button").click(function() {
 				$("#helpModal").modal("show");
 			});
+
+			$('#search .search-input').on('keyup', function() {
+				var value = $(this).val();
+
+				if (value.length > 0) {
+					$('#search .search-clear').show();
+					$('#files > div .jstree-children > li').hide();
+
+					$('#files > div .jstree-children > li > a').each(function() {
+						let regex = new RegExp(value, 'i');
+
+						if (regex.test($(this).text())) {
+							$(this).parent().show();
+						}
+					});
+
+					$('#files > div .jstree-children > li > ul').each(function() {
+						$(this).find('> li').each(function() {
+							if ($(this).css('display') != 'none') {
+								let _this = $(this);
+
+								while (_this.closest('ul.jstree-children').parent().length > 0) {
+									_this.closest('ul.jstree-children').parent().show();
+									_this = _this.closest('ul.jstree-children').parent();
+								}
+							}
+						});
+					});
+				} else {
+					$('#search .search-clear').hide();
+					$('#files > div .jstree-children > li').show();
+				}
+			});
+
+			$('#search .search-clear').on('click', function() {
+				$('#search .search-input').val('').trigger('keyup');
+			});
 		});
 	</script>
 </head>
@@ -1703,6 +1767,10 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 
 		<div class="row px-3">
 			<div class="col-lg-3 col-md-3 col-sm-12 col-12">
+				<div id="search">
+					<i class="fas fa-times search-clear" style="display: none;"></i>
+					<input type="text" value="" class="form-control mb-3 search-input" placeholder="Search&hellip;" autocomplete="off">
+				</div>
 				<div id="files" class="card">
 					<div class="card-block"></div>
 				</div>
