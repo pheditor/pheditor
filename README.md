@@ -14,6 +14,7 @@ Pheditor is a single-file editor and file manager written in PHP.
 6. Access levels for reading and writing and other permissions
 7. Terminal
 8. Dark mode
+9. Search in files
 
 ---
 
