@@ -1011,7 +1011,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 
 			$("#files > div").on("load_node.jstree", function(a, b) {
 				if (b.node.a_attr && b.node.a_attr.href != undefined) {
-					var hash = window.location.hash;
+					var hash = decodeURI(window.location.hash);
 					if (hash.indexOf(b.node.a_attr.href) == 0 && hash.replace(b.node.a_attr.href, "").indexOf("/") < 0) {
 						setTimeout(function() {
 							$("[data-file='" + hash.substring(1) + "']").click();
@@ -1318,7 +1318,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 			});
 
 			$(window).on("hashchange", function() {
-				var hash = window.location.hash.substring(1),
+				var hash = decodeURI(window.location.hash.substring(1)),
 					data = editor.getValue();
 
 				if (hash.length > 0) {
