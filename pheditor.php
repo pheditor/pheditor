@@ -270,7 +270,7 @@ if (isset($_GET['path'])) {
 	}
 
 	if (isset($_POST['file']) && empty($_POST['file']) === false) {
-		$_POST['file'] = urldecode($_POST['file']);
+		$_POST['file'] = base64_decode($_POST['file']);
 
 		if (empty(PATTERN_FILES) === false && !preg_match(PATTERN_FILES, basename($_POST['file']))) {
 			die(json_error('Invalid file pattern'));
@@ -289,8 +289,6 @@ if (isset($_GET['path'])) {
 
 	switch ($_POST['action']) {
 		case 'open':
-			$_POST['file'] = urldecode($_POST['file']);
-
 			if (isset($_POST['file']) && file_exists(MAIN_DIR . $_POST['file'])) {
 				die(json_success('OK', [
 					'data' => file_get_contents(MAIN_DIR . $_POST['file']),
@@ -1028,7 +1026,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 				core: {
 					data: {
 						url: function(node) {
-							return node.id == "#" ? "<?= $_SERVER['SCRIPT_NAME'] ?>?path=" : "<?= $_SERVER['SCRIPT_NAME'] ?>?path=" + node.a_attr["data-dir"];
+							return node.id == "#" ? "<?= $_SERVER['SCRIPT_NAME'] ?>?path=" : "<?= $_SERVER['SCRIPT_NAME'] ?>?path=" + encodeURIComponent(node.a_attr["data-dir"]);
 						}
 					}
 				},
@@ -1095,7 +1093,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 						$.post("<?= $_SERVER['SCRIPT_NAME'] ?>", {
 							action: "save",
 							token: token,
-							file: file,
+							file: btoa(file),
 							data: ""
 						}, function(data) {
 							alertBox(data.error ? "Error" : "Success", data.message, data.error ? "red" : "green");
@@ -1160,7 +1158,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 					$.post("<?= $_SERVER['SCRIPT_NAME'] ?>", {
 						action: "save",
 						token: token,
-						file: path,
+						file: btoa(path),
 						data: data
 					}, function(data) {
 						alertBox(data.error ? "Error" : "Success", data.message, data.error ? "red" : "green");
@@ -1342,7 +1340,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 								$.post("<?= $_SERVER['SCRIPT_NAME'] ?>", {
 									action: "open",
 									token: token,
-									file: encodeURIComponent(hash)
+									file: btoa(hash),
 								}, function(data) {
 									if (data.error == true) {
 										alertBox("Error", data.message, "red");
