@@ -1052,7 +1052,14 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 }
 
                 ?>
-                window.open("<?= $base_dir ?>" + $(this).attr("data-file"));
+
+                let file = '<?= $base_dir ?>' + $(this).attr("data-file");
+
+                if (file.substring(0, 2) == '//') {
+                    file = file.substring(1);
+                }
+
+                window.open(file, '_blank');
             });
 
             $("a.change-password").click(function() {
