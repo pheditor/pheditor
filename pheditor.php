@@ -28,44 +28,57 @@ define('DEFAULT_DIR_PERMISSION', 0755);
 define('DEFAULT_FILE_PERMISSION', 0644);
 define('LOCAL_ASSETS', false); // if true you should run `npm i` to download required libraries
 
+$asset_versions = [
+    'bootstrap' => '5.3.3',
+    'jstree' => '3.3.17',
+    'codemirror' => '6.65.7',
+    'jshint' => '2.13.6',
+    'jsonlint' => '1.6.0',
+    'izitoast' => '1.4.0',
+    'fontawesome' => '6.7.2',
+    'jquery' => '3.7.1',
+    'popperjs' => '2.11.8',
+    'js-sha512' => '0.9.0',
+];
+
 $assets = [
     'cdn' => [
         'css' => [
-            'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css',
-            'https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/themes/default/style.min.css',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/lint/lint.min.css',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/dialog/dialog.min.css',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/monokai.css',
-            empty(EDITOR_THEME) ? '' : 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/' . EDITOR_THEME . '.css',
-            'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css',
-            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css',
+            'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/' . $asset_versions['bootstrap'] . '/css/bootstrap.min.css',
+            'https://cdnjs.cloudflare.com/ajax/libs/jstree/' . $asset_versions['jstree'] . '/themes/default/style.min.css',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/codemirror.min.css',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/lint/lint.min.css',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/dialog/dialog.min.css',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/theme/monokai.css',
+            empty(EDITOR_THEME) ? '' : 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/theme/' . EDITOR_THEME . '.css',
+            'https://cdnjs.cloudflare.com/ajax/libs/izitoast/' . $asset_versions['izitoast'] . '/css/iziToast.min.css',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/' . $asset_versions['fontawesome'] . '/css/all.min.css',
         ],
         'js' => [
-            'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/jstree.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/javascript/javascript.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/css/css.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/php/php.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/xml/xml.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/htmlmixed/htmlmixed.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/markdown/markdown.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/clike/clike.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/jshint/2.13.6/jshint.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/jsonlint/1.6.0/jsonlint.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/lint/lint.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/lint/javascript-lint.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/lint/json-lint.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/lint/css-lint.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/search/search.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/search/searchcursor.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/search/jump-to-line.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/dialog/dialog.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/js-sha512/0.8.0/sha512.min.js'
+            'https://cdnjs.cloudflare.com/ajax/libs/jquery/' . $asset_versions['jquery'] . '/jquery.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/popper.js/' . $asset_versions['popperjs'] . '/umd/popper.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/' . $asset_versions['bootstrap'] . '/js/bootstrap.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jstree/' . $asset_versions['jstree'] . '/jstree.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/codemirror.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/javascript/javascript.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/css/css.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/php/php.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/xml/xml.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/htmlmixed/htmlmixed.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/markdown/markdown.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/clike/clike.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jshint/' . $asset_versions['jshint'] . '/jshint.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jsonlint/' . $asset_versions['jsonlint'] . '/jsonlint.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/lint/lint.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/lint/javascript-lint.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/lint/json-lint.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/lint/css-lint.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/search/search.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/search/searchcursor.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/search/jump-to-line.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/dialog/dialog.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/izitoast/' . $asset_versions['izitoast'] . '/js/iziToast.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/js-sha512/' . $asset_versions['js-sha512'] . '/sha512.min.js'
         ],
     ],
     'local' => [
@@ -348,12 +361,6 @@ if (isset($_GET['path'])) {
             } else {
                 echo json_error('Directory already exists');
             }
-            break;
-
-        case 'reload':
-            echo json_success('OK', [
-                'data' => files(MAIN_DIR),
-            ]);
             break;
 
         case 'password':
@@ -822,6 +829,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             margin-right: 10px;
             padding-top: 4px;
             border-radius: .2rem;
+            padding-left: 3em;
         }
 
         .dark-mode-button>label {
@@ -845,9 +853,12 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 
         body.dark-mode a,
         body.dark-mode #path,
-        body.dark-mode .btn-light,
-        body.dark-mode .modal-header .close {
+        body.dark-mode .btn-light {
             color: #fff;
+        }
+
+        body.dark-mode .modal-header .btn-close {
+            filter: invert(1);
         }
 
         body.dark-mode .card {
@@ -1115,7 +1126,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                         });
                     }
                 } else {
-                    alertBox("Warning", "Please select a file or directory", "yellow");
+                    alertBox("Warning", "Please select a file or directory from file explorer", "yellow");
                 }
             });
 
@@ -1151,7 +1162,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                         });
                     }
                 } else {
-                    alertBox("Warning", "Please select a file or directory", "yellow");
+                    alertBox("Warning", "ms-", "yellow");
                 }
             });
 
@@ -1199,7 +1210,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                         });
                     }
                 } else {
-                    alertBox("Warning", "Please select a file or directory", "yellow");
+                    alertBox("Warning", "ms-", "yellow");
                 }
             });
 
@@ -1236,7 +1247,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                         });
                     }
                 } else {
-                    alertBox("Warning", "Please select a file or directory", "yellow");
+                    alertBox("Warning", "ms-", "yellow");
                 }
             });
 
@@ -1372,7 +1383,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                                     $("#path").html(hash).hide().fadeIn(250);
                                     $(".dropdown").find(".save, .delete, .rename, .reopen, .close").removeClass("disabled");
 
-                                    $("#loading").fadeOut(250);
+                                    $("#loading").hide();
                                 });
                             }
                         }
@@ -1571,15 +1582,20 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 }, 250);
 
                 if (window.innerWidth >= 720) {
-                    var height = window.innerHeight - $(".CodeMirror")[0].getBoundingClientRect().top - $("#terminal #prompt").height() - 55;
+                    var terminalHeight = 200 + 70,
+                        height = window.innerHeight - $(".CodeMirror")[0].getBoundingClientRect().top - terminalHeight - 30,
+                        searchHeight = $('#search').outerHeight(true) + 30;
 
-                    $("#files, .CodeMirror").animate({
-                        "height": height + "px"
-                    }, 250);
+                    $('#files').animate({
+                        "height": (height - searchHeight) + "px",
+                    });
+                    $('.CodeMirror').animate({
+                        "height": (height - 15) + "px",
+                    });
                 } else {
-                    $("#files > div, .CodeMirror").animate({
+                    $("#files > div, .CodeMirror").css({
                         "height": ""
-                    }, 250);
+                    });
                 }
 
                 setCookie("terminal", "1", 86400);
@@ -1587,11 +1603,15 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 $("#terminal").find(".clear, .copy, .fullscreen").fadeOut();
 
                 if (window.innerWidth >= 720) {
-                    var height = window.innerHeight - $(".CodeMirror")[0].getBoundingClientRect().top - $("#terminal span").height() - 35;
+                    var height = window.innerHeight - $(".CodeMirror")[0].getBoundingClientRect().top - 55,
+                        searchHeight = $('#search').outerHeight(true) + 30;
 
-                    $("#files, .CodeMirror").animate({
-                        "height": height + "px"
-                    }, 250);
+                    $('#files').animate({
+                        "height": (height - searchHeight) + "px",
+                    });
+                    $('.CodeMirror').animate({
+                        "height": (height - 15) + "px",
+                    });
                 } else {
                     $("#files > div, .CodeMirror").animate({
                         "height": ""
@@ -1609,7 +1629,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             });
 
             $("#terminal button.copy").click(function() {
-                $("#terminal").append($("<textarea>").html($("#terminal pre").html()));
+                $("#terminal").append($("<textarea>").html($("#terminal pre").text()));
 
                 element = $("#terminal textarea")[0];
                 element.select();
@@ -1707,7 +1727,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 
 <body>
     <?php if (PASSWORD == hash('sha512', 'admin')) : ?>
-        <div class="heading-alert alert alert-warning"><i class="fa fa-info-circle"></i><span class="ml-2">You are using Pheditor with default password. Please click <a href="javascript:void(0);" class="change-password">here</a> to change password after installation.</span></div>
+        <div class="heading-alert alert alert-warning"><i class="fa fa-info-circle"></i><span class="ms-2">You are using Pheditor with default password. Please click <a href="javascript:void(0);" class="change-password">here</a> to change password after installation.</span></div>
     <?php endif; ?>
 
     <div class="container-fluid">
@@ -1717,12 +1737,12 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 <h1><a href="http://github.com/pheditor/pheditor" target="_blank" title="Pheditor <?= VERSION ?>">Pheditor</a></h1>
             </div>
             <div class="col-md-9">
-                <div class="float-left">
-                    <div class="dropdown float-left">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="fileMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">File</button>
+                <div class="float-start">
+                    <div class="dropdown float-start">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="fileMenu" data-bs-toggle="dropdown" aria-expanded="false">File</button>
                         <div class="dropdown-menu" aria-labelledby="fileMenu">
                             <?php if (in_array('newfile', $permissions)) { ?>
-                                <a class="dropdown-item new-file" href="javascript:void(0);">New File <span class="float-right text-secondary">N</span></a>
+                                <a class="dropdown-item new-file" href="javascript:void(0);">New File <span class="float-end text-secondary">N</span></a>
                             <?php } ?>
 
                             <?php if (in_array('newdir', $permissions)) { ?>
@@ -1730,7 +1750,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                             <?php } ?>
 
                             <?php if (in_array('uploadfile', $permissions)) { ?>
-                                <a class="dropdown-item upload-file" href="javascript:void(0);">Upload File <span class="float-right text-secondary">U</span></a>
+                                <a class="dropdown-item upload-file" href="javascript:void(0);">Upload File <span class="float-end text-secondary">U</span></a>
                             <?php } ?>
 
                             <?php if (in_array('newfile', $permissions) || in_array('newdir', $permissions)) { ?>
@@ -1738,31 +1758,31 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                             <?php } ?>
 
                             <?php if (in_array('newfile', $permissions) || in_array('editfile', $permissions)) { ?>
-                                <a class="dropdown-item save disabled" href="javascript:void(0);">Save <span class="float-right text-secondary">S</span></a>
+                                <a class="dropdown-item save disabled" href="javascript:void(0);">Save <span class="float-end text-secondary">S</span></a>
                             <?php } ?>
 
                             <?php if (in_array('deletefile', $permissions) || in_array('deletedir', $permissions)) { ?>
-                                <a class="dropdown-item delete disabled" href="javascript:void(0);">Delete <span class="float-right text-secondary">D</span></a>
+                                <a class="dropdown-item delete disabled" href="javascript:void(0);">Delete <span class="float-end text-secondary">D</span></a>
                             <?php } ?>
 
                             <?php if (in_array('renamefile', $permissions) || in_array('renamedir', $permissions)) { ?>
-                                <a class="dropdown-item rename disabled" href="javascript:void(0);">Rename <span class="float-right text-secondary">R</span></a>
+                                <a class="dropdown-item rename disabled" href="javascript:void(0);">Rename <span class="float-end text-secondary">R</span></a>
                             <?php } ?>
 
-                            <a class="dropdown-item reopen disabled" href="javascript:void(0);">Re-open <span class="float-right text-secondary">O</span></a>
+                            <a class="dropdown-item reopen disabled" href="javascript:void(0);">Re-open <span class="float-end text-secondary">O</span></a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item close disabled" href="javascript:void(0);">Close <span class="float-right text-secondary">C</span></a>
+                            <a class="dropdown-item close disabled" href="javascript:void(0);">Close <span class="float-end text-secondary">C</span></a>
                         </div>
                     </div>
-                    <span id="path" class="btn float-left"></span>
+                    <span id="path" class="btn float-start"></span>
                 </div>
 
-                <div class="float-right">
+                <div class="float-end">
                     <button type="button" class="btn btn-sm btn-light help-button"><i class="fa fa-question-circle"></i></button>
 
-                    <div class="custom-control custom-switch dark-mode-button bg-light">
-                        <input type="checkbox" class="custom-control-input" id="dark_mode">
-                        <label class="custom-control-label" for="dark_mode"><i class="far fa-moon"></i></label>
+                    <div class="form-check form-switch dark-mode-button">
+                        <input class="form-check-input" type="checkbox" role="switch" id="dark_mode">
+                        <label class="form-check-label" for="dark_mode"><i class="far fa-moon"></i></label>
                     </div>
 
                     <?php if (in_array('changepassword', $permissions)) { ?><a href="javascript:void(0);" class="change-password btn btn-sm btn-primary"><i class="fas fa-key"></i></a> &nbsp; <?php } ?><a href="<?= $_SERVER['SCRIPT_NAME'] ?>?logout=<?= $_SESSION['pheditor_token'] ?>" class="btn btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i></a>
@@ -1804,10 +1824,10 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                         <div class="card-block">
                             <div id="terminal">
                                 <div>
-                                    <button type="button" class="btn btn-light float-right ml-1 clear" style="display: none;">Clear</button>
-                                    <button type="button" class="btn btn-light float-right ml-1 copy" style="display: none;">Copy to clipboard</button>
-                                    <button type="button" class="btn btn-light float-right ml-1 fullscreen" style="display: none;">Full Screen</button>
-                                    <span class="toggle collapsed" data-toggle="collapse" data-target="#prompt"><i class="fa"></i> Terminal</span>
+                                    <button type="button" class="btn btn-light float-end ms-1 clear" style="display: none;">Clear</button>
+                                    <button type="button" class="btn btn-light float-end ms-1 copy" style="display: none;">Copy to clipboard</button>
+                                    <button type="button" class="btn btn-light float-end ms-1 fullscreen" style="display: none;">Full Screen</button>
+                                    <span class="toggle collapsed" data-bs-toggle="collapse" data-bs-target="#prompt"><i class="fa"></i> Terminal</span>
                                     <div style="clear:both"></div>
                                 </div>
                                 <div id="prompt" class="collapse">
@@ -1834,7 +1854,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title">Upload File</h4>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div>
@@ -1868,7 +1888,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             <div class="modal-content">
                 <div class="modal-header">
                     <h6 class="modal-title">Keyboard Shortcuts</h6>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
