@@ -948,6 +948,35 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             cursor: pointer;
             padding: 10px;
         }
+
+        .vakata-context {
+            background-color: #fff;
+            border-color: rgba(0, 0, 0, 0.176);
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
+        }
+
+        .vakata-context li a {
+            padding: 0 10px;
+            color: #212529;
+            text-shadow: none;
+            height: auto !important;
+        }
+
+        .vakata-context .vakata-context-hover a,
+        .vakata-context li a:hover {
+            background: #f8f9fa;
+            box-shadow: none;
+        }
+
+        .vakata-context li.vakata-context-separator a {
+            margin: 0 !important;
+        }
+
+        .vakata-context li a i,
+        .vakata-context span.vakata-contextmenu-sep {
+            display: none !important;
+        }
     </style>
 
     <?php foreach ($assets[LOCAL_ASSETS ? 'local' : 'cdn']['js'] as $value) : ?>
@@ -1033,7 +1062,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 state: {
                     key: "pheditor"
                 },
-                plugins: ["state", "sort"],
+                plugins: ["state", "sort", 'contextmenu'],
                 core: {
                     data: {
                         url: function(node) {
@@ -1048,6 +1077,54 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                         return (a1.text > b1.text) ? 1 : -1;
                     } else {
                         return (a1.icon > b1.icon) ? -1 : 1;
+                    }
+                },
+                contextmenu: {
+                    items: function(node) {
+                        let type = node.icon.indexOf('file') > -1 ? 'file' : 'dir',
+                            customPath = type == 'file' ? node.a_attr["data-file"] : node.a_attr["data-dir"];
+
+                        let items = {
+                            "newfile": {
+                                label: "New File",
+                                action: function(data) {
+                                    $(".dropdown .new-file").trigger("click", [customPath]);
+                                }
+                            },
+                            'newdir': {
+                                label: "New Directory",
+                                action: function(data) {
+                                    $(".dropdown .new-dir").trigger("click", [customPath]);
+                                }
+                            },
+                            'uploadfile': {
+                                label: "Upload File",
+                                action: function(data) {
+                                    $(".dropdown .upload-file").trigger("click", [customPath]);
+                                },
+                                "separator_after": true,
+                            },
+                            'delete': {
+                                label: "Delete",
+                                action: function(data) {
+                                    $(".dropdown .delete").trigger("click", [customPath]);
+                                }
+                            },
+                            'rename': {
+                                label: "Rename",
+                                action: function(data) {
+                                    $(".dropdown .rename").trigger("click", [type == 'file' ? node.a_attr["data-file"] : node.a_attr["data-dir"]]);
+                                },
+                                "separator_after": true,
+                            },
+                        };
+
+                        if (customPath === "/") {
+                            items.delete._disabled = true;
+                            items.rename._disabled = true;
+                        }
+
+                        return items;
                     }
                 }
             });
@@ -1093,8 +1170,12 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 }
             });
 
-            $(".dropdown .new-file").click(function() {
+            $(".dropdown .new-file").click(function(e, customPath) {
                 var path = $("#path").html();
+
+                if (customPath) {
+                    path = customPath;
+                }
 
                 if (path.length > 0) {
                     var name = prompt("Please enter file name:", "new-file.php"),
@@ -1130,8 +1211,12 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 }
             });
 
-            $(".dropdown .new-dir").click(function() {
+            $(".dropdown .new-dir").click(function(e, customPath) {
                 var path = $("#path").html();
+
+                if (customPath) {
+                    path = customPath;
+                }
 
                 if (path.length > 0) {
                     var name = prompt("Please enter directory name:", "new-dir"),
@@ -1192,8 +1277,12 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 $(".dropdown").find(".save, .delete, .rename, .reopen, .close").addClass("disabled");
             });
 
-            $(".dropdown .delete").click(function() {
+            $(".dropdown .delete").click(function(e, customPath) {
                 var path = $("#path").html();
+
+                if (customPath) {
+                    path = customPath;
+                }
 
                 if (path.length > 0) {
                     if (confirm("Are you sure to delete this file?")) {
@@ -1214,9 +1303,14 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 }
             });
 
-            $(".dropdown .rename").click(function() {
-                var path = $("#path").html(),
-                    split = path.split("/"),
+            $(".dropdown .rename").click(function(e, customPath) {
+                var path = $("#path").html();
+
+                if (customPath) {
+                    path = customPath;
+                }
+
+                var split = path.split("/"),
                     file = split[split.length - 1],
                     dir = split[split.length - 2],
                     new_file_name;
