@@ -83,7 +83,7 @@ You can empty the `PASSWORD` constant in the source code to access the script wi
 
 There are eight permissions for users that is defined in `PERMISSIONS` constant. You can remove any of them as you need.
 
-Default value: `newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword,uploadfile,terminal`
+Default value: `newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword,uploadfile,terminal,movefile`
 
 ---
 **Thanks to:**
