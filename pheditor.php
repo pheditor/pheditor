@@ -19,7 +19,7 @@ define('ACCESS_IP', '');
 define('HISTORY_PATH', MAIN_DIR . DS . '.phedhistory');
 define('MAX_HISTORY_FILES', 5);
 define('WORD_WRAP', true);
-define('PERMISSIONS', 'newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword,uploadfile,terminal'); // empty means all
+define('PERMISSIONS', 'newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword,uploadfile,terminal,movefile'); // empty means all
 define('PATTERN_FILES', '/^[A-Za-z0-9-_.\/]*\.(txt|php|htm|html|js|css|tpl|md|xml|json)$/i'); // empty means no pattern
 define('PATTERN_DIRECTORIES', '/^((?!backup).)*$/i'); // empty means no pattern
 define('TERMINAL_COMMANDS', 'ls,ll,cp,rm,mv,whoami,pidof,pwd,whereis,kill,php,date,cd,mkdir,chmod,chown,rmdir,touch,cat,git,find,grep,echo,tar,zip,unzip,whatis,df,help,locate,pkill,du,updatedb,composer,exit');
@@ -472,6 +472,44 @@ if (isset($_GET['path'])) {
                         echo json_error('Unable to rename file');
                     }
                 }
+            }
+            break;
+
+        case 'move':
+            if (in_array('movefile', $permissions) !== true) {
+                die(json_error('Permission denied'));
+            }
+
+            $source = $_POST['source'] ?? null;
+            $destination = $_POST['destination'] ?? null;
+
+            if (empty($source) || empty($destination)) {
+                die(json_error('Please select a file or a directory'));
+            }
+
+            if (strpos($source, '/..') !== false || strpos($source, '\\..') !== false || strpos($destination, '/..') !== false || strpos($destination, '\\..') !== false) {
+                die(json_error('Invalid source or destination'));
+            }
+
+            $source_path = MAIN_DIR . $source;
+            $destination_path = MAIN_DIR . $destination;
+
+            if (file_exists($source_path) === false || file_exists($destination_path) === false || is_file($source_path) === false || is_dir($destination_path) === false) {
+                die(json_error('Source or destination does not exists'));
+            }
+
+            if (is_writable($destination_path) !== true) {
+                die(json_error('Destination is not writable'));
+            }
+
+            if (file_exists($destination_path . basename($source_path))) {
+                die(json_error('File already exists'));
+            }
+
+            if (rename($source_path, $destination_path . basename($source_path)) !== false) {
+                echo json_success('File moved successfully');
+            } else {
+                echo json_error('Unable to move file');
             }
             break;
 
@@ -1062,8 +1100,24 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 state: {
                     key: "pheditor"
                 },
-                plugins: ["state", "sort", 'contextmenu'],
+                plugins: ["state", "sort", 'contextmenu', 'dnd'],
                 core: {
+                    check_callback: function(operation, node, parent, position, more) {
+                        if (operation === 'move_node') {
+                            if (parent.icon === undefined) {
+                                return false;
+                            }
+
+                            let sourceType = node.icon.indexOf('file') > -1 ? 'file' : 'dir',
+                                destinationType = parent.icon.indexOf('file') > -1 ? 'file' : 'dir';
+
+                            if (sourceType == 'file' && destinationType == 'dir') {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    },
                     data: {
                         url: function(node) {
                             return node.id == "#" ? "<?= $_SERVER['SCRIPT_NAME'] ?>?path=" : "<?= $_SERVER['SCRIPT_NAME'] ?>?path=" + encodeURIComponent(node.a_attr["data-dir"]);
@@ -1127,6 +1181,25 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                         return items;
                     }
                 }
+            });
+
+            $('#files > div').on('move_node.jstree', function(e, data) {
+                let type = data.node.icon.indexOf('file') > -1 ? 'file' : 'dir',
+                    sourcePath = data.node.a_attr['data-' + type],
+                    destinationPath = document.querySelector('#' + data.parent + ' > a').getAttribute('data-dir');
+
+                $.post('<?= $_SERVER['SCRIPT_NAME'] ?>', {
+                    action: 'move',
+                    token: token,
+                    source: sourcePath,
+                    destination: destinationPath,
+                }, function(data) {
+                    alertBox(data.error ? "Error" : "Success", data.message, data.error ? "red" : "green");
+
+                    if (data.error == false) {
+                        $("#files > div").jstree("refresh");
+                    }
+                });
             });
 
             $("#files").on("dblclick", "a[data-file]", function(event) {
