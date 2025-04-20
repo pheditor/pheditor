@@ -1015,6 +1015,15 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
         .vakata-context span.vakata-contextmenu-sep {
             display: none !important;
         }
+
+        .refresh {
+            display: inline-block;
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: auto;
+            border: none;
+        }
     </style>
 
     <?php foreach ($assets[LOCAL_ASSETS ? 'local' : 'cdn']['js'] as $value) : ?>
@@ -1888,6 +1897,10 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             $('#search .search-clear').on('click', function() {
                 $('#search .search-input').val('').trigger('keyup');
             });
+
+            $('a.refresh').on('click', function() {
+                $("#files > div").jstree("refresh");
+            });
         });
     </script>
 </head>
@@ -1964,6 +1977,9 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                     <input type="text" value="" class="form-control mb-3 search-input" placeholder="Search&hellip;" autocomplete="off">
                 </div>
                 <div id="files" class="card">
+                    <a href="#" class="btn btn-sm btn-light refresh">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </a>
                     <div class="card-block"></div>
                 </div>
             </div>
