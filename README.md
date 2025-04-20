@@ -86,15 +86,6 @@ There are eight permissions for users that is defined in `PERMISSIONS` constant.
 Default value: `newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword,uploadfile,terminal`
 
 ---
-
-### Donation
-If you found this project useful, please consider making a donation to keep this project alive.
-Cryptocurrency | Address
---- | ---
-Bitcoin | `bc1qqjm32eupk7lw3kctlmflqh9spzalya9mqwppw9`
-Ethereum | `0x3d7324f1718fF9f9F57b1d45c80dEdea59F0b412`
-
----
 **Thanks to:**
 
 [Laurent](https://github.com/slolo2000), [fjavierc](https://github.com/fjavierc), [Jidbo](https://github.com/Jidbo)
