@@ -1,7 +1,7 @@
 {
 	"name": "pheditor/pheditor",
 	"type": "project",
-	"description": "php file editor",
+	"description": "A lightweight PHP-based file editor and manager",
 	"keywords": [
 		"pheditor",
 		"php",
@@ -19,7 +19,8 @@
 		}
 	],
 	"require": {
-		"php": ">=5.4.0"
+		"php": "^8.3"
 	},
-	"minimum-stability": "stable"
+	"minimum-stability": "stable",
+	"prefer-stable": true
 }
