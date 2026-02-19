@@ -29,13 +29,13 @@ define('DEFAULT_FILE_PERMISSION', 0644);
 define('LOCAL_ASSETS', false); // if true you should run `npm i` to download required libraries
 
 $asset_versions = [
-    'bootstrap' => '5.3.3',
+    'bootstrap' => '5.3.8',
     'jstree' => '3.3.17',
     'codemirror' => '6.65.7',
     'jshint' => '2.13.6',
     'jsonlint' => '1.6.0',
     'izitoast' => '1.4.0',
-    'fontawesome' => '6.7.2',
+    'fontawesome' => '7.0.1',
     'jquery' => '3.7.1',
     'popperjs' => '2.11.8',
     'js-sha512' => '0.9.0',
