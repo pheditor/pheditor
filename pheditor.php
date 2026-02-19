@@ -888,7 +888,9 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 
         body.dark-mode a,
         body.dark-mode #path,
-        body.dark-mode .btn-light {
+        body.dark-mode .btn-light,
+        body.dark-mode .jstree-anchor,
+        body.dark-mode #terminal .toggle {
             color: #fff;
         }
 
@@ -943,7 +945,9 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             border: 0;
         }
 
-        body.dark-mode input[type=text] {
+        body.dark-mode input[type=text],
+        body.dark-mode input[type=text]::placeholder,
+        body.dark-mode .btn-light {
             background-color: #272822;
             border-color: #272822;
             color: #f8f8f2;
