@@ -31,8 +31,7 @@ define('LOCAL_ASSETS', false); // if true you should run `npm i` to download req
 $asset_versions = [
     'bootstrap' => '5.3.8',
     'jstree' => '3.3.17',
-    'codemirror' => '6.65.7',
-    'jshint' => '2.13.6',
+    'codemirror' => '5.65.20',
     'jsonlint' => '1.6.0',
     'izitoast' => '1.4.0',
     'fontawesome' => '7.0.1',
@@ -67,7 +66,6 @@ $assets = [
             'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/htmlmixed/htmlmixed.js',
             'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/markdown/markdown.js',
             'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/mode/clike/clike.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/jshint/' . $asset_versions['jshint'] . '/jshint.min.js',
             'https://cdnjs.cloudflare.com/ajax/libs/jsonlint/' . $asset_versions['jsonlint'] . '/jsonlint.min.js',
             'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/lint/lint.min.js',
             'https://cdnjs.cloudflare.com/ajax/libs/codemirror/' . $asset_versions['codemirror'] . '/addon/lint/javascript-lint.min.js',
@@ -105,7 +103,6 @@ $assets = [
             'node_modules/codemirror/mode/htmlmixed/htmlmixed.js',
             'node_modules/codemirror/mode/markdown/markdown.js',
             'node_modules/codemirror/mode/clike/clike.js',
-            'node_modules/jshint/dist/jshint.js',
             // 'node_modules/jsonlint/lib/jsonlint.js',
             'node_modules/codemirror/addon/lint/lint.js',
             'node_modules/codemirror/addon/lint/javascript-lint.js',
@@ -1090,8 +1087,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 indentUnit: 4,
                 indentWithTabs: true,
                 lineWrapping: <?= WORD_WRAP ? 'true' : 'false' ?>,
-                gutters: ["CodeMirror-lint-markers"],
-                lint: true
+                gutters: ["CodeMirror-lint-markers"]
             });
 
             $("#files > div").on("load_node.jstree", function(a, b) {
