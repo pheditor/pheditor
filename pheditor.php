@@ -1901,6 +1901,10 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             $('a.refresh').on('click', function() {
                 $("#files > div").jstree("refresh");
             });
+
+            $('a.logout').click(function() {
+                $("#logoutModal").modal("show");
+            });
         });
     </script>
 </head>
@@ -1965,7 +1969,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                         <label class="form-check-label" for="dark_mode"><i class="far fa-moon"></i></label>
                     </div>
 
-                    <?php if (in_array('changepassword', $permissions)) { ?><a href="javascript:void(0);" class="change-password btn btn-sm btn-primary"><i class="fas fa-key"></i></a> &nbsp; <?php } ?><a href="<?= $_SERVER['SCRIPT_NAME'] ?>?logout=<?= $_SESSION['pheditor_token'] ?>" class="btn btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i></a>
+                    <?php if (in_array('changepassword', $permissions)) { ?><a href="javascript:void(0);" class="change-password btn btn-sm btn-primary"><i class="fas fa-key"></i></a> &nbsp; <?php } ?><a href="#" class="btn btn-sm btn-danger logout"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
             </div>
         </div>
@@ -2104,6 +2108,23 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                             </div>
                         <?php endforeach; ?>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="logoutModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Logout</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to logout?</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="<?= $_SERVER['SCRIPT_NAME'] ?>?logout=<?= $_SESSION['pheditor_token'] ?>" type="button" class="btn btn-danger" data-dismiss="modal">Yes</a>
                 </div>
             </div>
         </div>
