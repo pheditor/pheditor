@@ -871,6 +871,10 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             margin: 0 10px 4px 10px;
         }
 
+        body.dark-mode .modal p {
+            color: #f8f8f2;
+        }
+
         body.dark-mode,
         body.dark-mode .modal-header,
         body.dark-mode .modal-footer {
@@ -1233,23 +1237,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             });
 
             $("a.change-password").click(function() {
-                var password = prompt("Please enter new password:");
-
-                if (password != null && password.length > 0) {
-                    $.post("<?= $_SERVER['SCRIPT_NAME'] ?>", {
-                        action: "password",
-                        token: token,
-                        password: password
-                    }, function(data) {
-                        alertBox(data.error ? "Error" : "Success", data.message, data.error ? "red" : "green");
-
-                        if (data.error === false) {
-                            setTimeout(function() {
-                                location.reload();
-                            }, 1000);
-                        }
-                    });
-                }
+                $("#changePasswordModal").modal('show');
             });
 
             $(".dropdown .new-file").click(function(e, customPath) {
@@ -1905,6 +1893,43 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             $('a.logout').click(function() {
                 $("#logoutModal").modal("show");
             });
+
+            $("#changePasswordModal input[type=password]").keydown(function(event) {
+                if (event.keyCode == 13) {
+                    $("#changePasswordModal .change-password-confirm").trigger("click");
+                }
+            });
+
+            $("#changePasswordModal .change-password-confirm").click(function() {
+                var password = $("#changePasswordModal input").val();
+
+                if (password != null && password.length > 0) {
+                    $(this).prop("disabled", true);
+
+                    $.post("<?= $_SERVER['SCRIPT_NAME'] ?>", {
+                        action: "password",
+                        token: token,
+                        password: password
+                    }, function(data) {
+                        alertBox(data.error ? "Error" : "Success", data.message, data.error ? "red" : "green");
+
+                        if (data.error === false) {
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1000);
+                        }
+
+                        $(this).prop("disabled", false);
+                    });
+                } else {
+                    alertBox("Error", "Please enter new password", "yellow");
+                }
+
+            });
+
+            $("#changePasswordModal").on("shown.bs.modal", function() {
+                $(this).find("input:first").focus();
+            });
         });
     </script>
 </head>
@@ -2130,6 +2155,25 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
         </div>
     </div>
 
+    <div class="modal fade" id="changePasswordModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Change Password</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <p>Please enter your new password.</p>
+                        <input name="new_password" type="password" value="" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary change-password-confirm" data-dismiss="modal">Change</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
