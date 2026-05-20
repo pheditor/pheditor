@@ -583,7 +583,7 @@ if (isset($_GET['path'])) {
                     exit;
                 }
 
-                $output = shell_exec((empty($dir) ? null : 'cd ' . $dir . ' && ') . $command . ' && echo \ ; pwd');
+                $output = shell_exec((empty($dir) ? null : 'cd ' . escapeshellarg($dir) . ' && ') . $command . ' && echo \ ; pwd');
                 $output = trim($output);
 
                 if (empty($output)) {
