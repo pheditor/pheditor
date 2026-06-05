@@ -1048,7 +1048,8 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             last_keyup_double = false,
             terminal_history = 1,
             jstree_hashchange = true,
-            token = "<?= $_SESSION['pheditor_token'] ?>";
+            token = "<?= $_SESSION['pheditor_token'] ?>",
+            undoFlag = true;
 
         function alertBox(title, message, color) {
             iziToast.show({
@@ -1096,6 +1097,22 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                 indentWithTabs: true,
                 lineWrapping: <?= WORD_WRAP ? 'true' : 'false' ?>,
                 gutters: ["CodeMirror-lint-markers"]
+            });
+
+            editor.on("keydown", function(cm, event) {
+                if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+                    let data = editor.getValue();
+
+                    if (!undoFlag || ($("#digest").val().length < 1 || $("#digest").val() == sha512(data))) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return false;
+                    }
+                }
+            });
+
+            editor.on("change", function(cm, change) {
+                undoFlag = true;
             });
 
             $("#files > div").on("load_node.jstree", function(a, b) {
@@ -1532,6 +1549,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
 
                                     editor.setValue(data.data);
                                     editor.setOption("mode", "application/x-httpd-php");
+                                    undoFlag = false;
 
                                     $("#digest").val(sha512(data.data));
 
