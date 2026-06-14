@@ -152,28 +152,59 @@ session_start();
 
 if (empty(PASSWORD) === false && (isset($_SESSION['pheditor_admin'], $_SESSION['pheditor_password']) === false || $_SESSION['pheditor_admin'] !== true || $_SESSION['pheditor_password'] != PASSWORD)) {
     if (isset($_POST['pheditor_password']) && empty($_POST['pheditor_password']) === false) {
-        $password_hash = hash('sha512', $_POST['pheditor_password']);
+        if (PASSWORD == hash('sha512', 'admin')) {
+            if (isset($_POST['pheditor_new_password']) && isset($_POST['pheditor_confirm_password'])) {
+                if ($_POST['pheditor_new_password'] === 'admin') {
+                    $error = 'Password cannot be admin';
+                } else if ($_POST['pheditor_new_password'] === $_POST['pheditor_confirm_password']) {
+                    $contents = file(__FILE__);
+                    $password_hash = hash('sha512', $_POST['pheditor_new_password']);
 
-        if ($password_hash === PASSWORD) {
-            session_regenerate_id(true);
+                    foreach ($contents as $key => $line) {
+                        if (strpos($line, 'define(\'PASSWORD\'') !== false) {
+                            $contents[$key] = "define('PASSWORD', '" . $password_hash . "');\n";
 
-            $_SESSION['pheditor_admin'] = true;
-            $_SESSION['pheditor_password'] = $password_hash;
+                            break;
+                        }
+                    }
 
-            redirect();
-        } else {
-            $error = 'The entry password is not correct.';
+                    file_put_contents(__FILE__, implode($contents));
 
-            $log = file_exists(LOG_FILE) ? unserialize(file_get_contents(LOG_FILE)) : array();
+                    $_SESSION['pheditor_password'] = $password_hash;
 
-            if (isset($log[$_SERVER['REMOTE_ADDR']]) === false) {
-                $log[$_SERVER['REMOTE_ADDR']] = array('num' => 0, 'time' => 0);
+                    session_regenerate_id(true);
+
+                    redirect();
+                } else {
+                    $error = 'Password does not match';
+                }
             }
 
-            $log[$_SERVER['REMOTE_ADDR']]['num'] += 1;
-            $log[$_SERVER['REMOTE_ADDR']]['time'] = time();
+            die('<title>Pheditor</title><form method="post"><div style="text-align:center"><h1><a href="http://github.com/pheditor/pheditor" target="_blank" title="PHP file editor" style="color:#444;text-decoration:none" tabindex="3">Pheditor</a></h1>' . (isset($error) ? '<p style="color:#dd0000">' . $error . '</p>' : null) . '<input id="pheditor_password" name="pheditor_password" type="hidden" value="admin"><input id="pheditor_new_password" name="pheditor_new_password" type="password" value="" placeholder="New Password&hellip;" tabindex="1"><br><br><input id="pheditor_confirm_password" name="pheditor_confirm_password" type="password" value="" placeholder="Confirm Password&hellip;" tabindex="2"><br><br><input type="submit" value="Change Password" tabindex="3"></div></form><script type="text/javascript">document.getElementById("pheditor_new_password").focus();</script>');
+        } else {
+            $password_hash = hash('sha512', $_POST['pheditor_password']);
 
-            file_put_contents(LOG_FILE, serialize($log));
+            if ($password_hash === PASSWORD) {
+                session_regenerate_id(true);
+
+                $_SESSION['pheditor_admin'] = true;
+                $_SESSION['pheditor_password'] = $password_hash;
+
+                redirect();
+            } else {
+                $error = 'The entry password is not correct.';
+
+                $log = file_exists(LOG_FILE) ? unserialize(file_get_contents(LOG_FILE)) : array();
+
+                if (isset($log[$_SERVER['REMOTE_ADDR']]) === false) {
+                    $log[$_SERVER['REMOTE_ADDR']] = array('num' => 0, 'time' => 0);
+                }
+
+                $log[$_SERVER['REMOTE_ADDR']]['num'] += 1;
+                $log[$_SERVER['REMOTE_ADDR']]['time'] = time();
+
+                file_put_contents(LOG_FILE, serialize($log));
+            }
         }
     } else if (isset($_POST['action'])) {
         header('HTTP/1.0 403 Forbidden');
@@ -554,7 +585,7 @@ if (isset($_GET['path'])) {
                 $command  = $_POST['command'];
                 $dir = $_POST['dir'];
 
-                if (strpos($command, '&') !== false || strpos($command, ';') !== false || strpos($command, '||') !== false || strpos($command, '$') !== false) {
+                if (strpos($command, '&') !== false || strpos($command, ';') !== false || strpos($command, '|') !== false || strpos($command, '$') !== false || strpos($command, '`') !== false || strpos($command, "\n") !== false || strpos($command, "\r") !== false) {
                     echo json_error("Illegal character(s) in command (& ; ||)\n");
 
                     exit;
