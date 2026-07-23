@@ -574,64 +574,98 @@ if (isset($_GET['path'])) {
 
         case 'terminal':
             if (in_array('terminal', $permissions) !== false && isset($_POST['command'], $_POST['dir'])) {
-                if (function_exists('shell_exec') === false) {
-                    echo json_error("shell_exec function is disabled\n");
+                $disabled_functions = array_map('trim', explode(',', (string) ini_get('disable_functions')));
 
+                if (function_exists('proc_open') === false || in_array('proc_open', $disabled_functions, true)) {
+                    echo json_error("proc_open function is disabled on this host. Terminal feature cannot run safely without it.\n");
                     exit;
                 }
 
                 set_time_limit(15);
 
-                $command  = $_POST['command'];
-                $dir = $_POST['dir'];
+                $raw_command = $_POST['command'];
+                $dir         = $_POST['dir'];
 
-                if (strpos($command, '&') !== false || strpos($command, ';') !== false || strpos($command, '|') !== false || strpos($command, '$') !== false || strpos($command, '`') !== false || strpos($command, "\n") !== false || strpos($command, "\r") !== false) {
-                    echo json_error("Illegal character(s) in command (& ; ||)\n");
+                $tokens = terminal_tokenize($raw_command);
 
+                if ($tokens === false || count($tokens) === 0) {
+                    echo json_error("Invalid command syntax\n");
                     exit;
                 }
 
-                $command_found = false;
-                $terminal_commands = explode(',', TERMINAL_COMMANDS);
+                $binary = $tokens[0];
 
-                foreach ($terminal_commands as $value) {
-                    $value = trim($value);
+                $terminal_commands = array_map('trim', explode(',', TERMINAL_COMMANDS));
 
-                    if (strlen($command) >= strlen($value) && substr($command, 0, strlen($value)) == $value) {
-                        $command_found = true;
-
-                        break;
-                    }
-                }
-
-                if ($command_found === false) {
+                if (in_array($binary, $terminal_commands, true) === false) {
+                    $commands = [];
                     foreach ($terminal_commands as $key => $value) {
                         $commands[$key % 3] = isset($commands[$key % 3]) ? $commands[$key % 3] . "\t" . $value : $value;
                     }
 
                     echo json_error("<span class=\"text-danger\">Command not allowed</span>\n<span class=\"text-success\">Available commands:</span>\n" . implode("\n", $commands) . "\n");
-
                     exit;
                 }
 
-                $output = shell_exec((empty($dir) ? null : 'cd ' . escapeshellarg($dir) . ' && ') . $command . ' && echo \ ; pwd');
-                $output = trim($output);
+                $dangerous_args = [
+                    'find'     => ['-exec', '-execdir', '-ok', '-okdir', '-fprintf', '-fprint', '-delete'],
+                    'git'      => ['-c', '--exec-path', '--upload-pack', '--receive-pack', '--config'],
+                    'php'      => ['-r', '-d', '-a', '-x', '-n', '-c', '-S', '-B', '-E', '-R'],
+                    'tar'      => ['--checkpoint-action', '--to-command', '-I', '--use-compress-program', '--rsh-command', '-F', '--new-volume-script'],
+                    'composer' => ['run-script', 'exec', 'config', 'create-project', 'global', '--working-dir'],
+                ];
 
-                if (empty($output)) {
-                    $output = null;
-                    $dir = null;
-                } else {
-                    $output = explode("\n", $output);
-                    $dir = end($output);
-
-                    unset($output[count($output) - 1]);
-
-                    $output = implode("\n", $output);
-                    $output = trim($output) . "\n";
-                    $output = htmlspecialchars($output);
+                if (isset($dangerous_args[$binary])) {
+                    foreach ($tokens as $token) {
+                        foreach ($dangerous_args[$binary] as $bad_arg) {
+                            if (stripos($token, $bad_arg) === 0) {
+                                echo json_error("Argument not allowed: " . htmlspecialchars($token) . "\n");
+                                exit;
+                            }
+                        }
+                    }
                 }
 
-                echo json_success('OK', ['result' => $output, 'dir' => $dir]);
+                $extra_error = terminal_extra_checks($binary, $tokens);
+                if ($extra_error !== null) {
+                    echo json_error(htmlspecialchars($extra_error) . "\n");
+                    exit;
+                }
+
+                $cwd = (empty($dir) === false && is_dir($dir)) ? $dir : getcwd();
+
+                $env = [
+                    'PATH' => getenv('PATH') ?: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+                ];
+
+                $descriptors = [
+                    0 => ['pipe', 'r'],
+                    1 => ['pipe', 'w'],
+                    2 => ['pipe', 'w'],
+                ];
+
+                $process = proc_open($tokens, $descriptors, $pipes, $cwd, $env);
+
+                if (is_resource($process) === false) {
+                    echo json_error("Failed to start process\n");
+                    exit;
+                }
+
+                fclose($pipes[0]);
+                $stdout = stream_get_contents($pipes[1]);
+                $stderr = stream_get_contents($pipes[2]);
+                fclose($pipes[1]);
+                fclose($pipes[2]);
+                $exit_code = proc_close($process);
+
+                $combined_output = trim($stdout . ($stderr !== '' ? "\n" . $stderr : ''));
+                $output = $combined_output === '' ? null : htmlspecialchars($combined_output) . "\n";
+
+                echo json_success('OK', [
+                    'result'    => $output,
+                    'dir'       => $cwd,
+                    'exit_code' => $exit_code,
+                ]);
             }
             break;
     }
@@ -716,6 +750,52 @@ function check_path($path, $check_existence = true)
     }
 
     return false;
+}
+
+function terminal_tokenize($command)
+{
+    if (preg_match('/^[\w\s\-\.\/=:,\'"]+$/u', $command) !== 1) {
+        return false;
+    }
+
+    preg_match_all('/"([^"]*)"|\'([^\']*)\'|(\S+)/', $command, $matches, PREG_SET_ORDER);
+
+    $tokens = [];
+    foreach ($matches as $m) {
+        if ($m[1] !== '') {
+            $tokens[] = $m[1];
+        } elseif ($m[2] !== '') {
+            $tokens[] = $m[2];
+        } else {
+            $tokens[] = $m[3];
+        }
+    }
+
+    return $tokens;
+}
+
+function terminal_extra_checks($binary, array $tokens)
+{
+    if ($binary === 'git') {
+        foreach ($tokens as $t) {
+            if (stripos($t, 'ext::') !== false || stripos($t, 'fd::') !== false) {
+                return "Custom git transport (ext::/fd::) is not allowed";
+            }
+        }
+    }
+
+    if ($binary === 'chmod') {
+        foreach ($tokens as $t) {
+            if (preg_match('/^[ugoa]*\+.*s/', $t) === 1) {
+                return "Setting setuid/setgid bit is not allowed";
+            }
+            if (preg_match('/^[1-7][0-7]{3}$/', $t) === 1) {
+                return "Setting setuid/setgid/sticky bit numerically is not allowed";
+            }
+        }
+    }
+
+    return null;
 }
 
 $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
@@ -1739,8 +1819,10 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                                     terminal_dir = data.dir;
                                 }
 
-                                if (data.result == null) {
-                                    data.result = "Command not found\n";
+                                if (data.exit_code !== 0) {
+                                    data.result = "Command failed (exit code " + data.exit_code + ")\n";
+                                } else if (data.result == null) {
+                                    data.result = "(no output)\n";
                                 }
 
                                 $("#terminal pre").append(data.result);
