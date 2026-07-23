@@ -32,6 +32,8 @@ Install using composer:
 
 or just upload `pheditor.php` to your web host (and/or rename it as you wish).
 
+**⚠️ Immediately after installing, change the default password (see NOTES below) before using any other feature.**
+
 ---
 
 ### Local assets
@@ -48,9 +50,25 @@ For using local assets follow these steps:
 
 ---
 
+## Security Model
+
+Pheditor is a **single-admin tool**, conceptually similar to a local code editor (e.g. VSCode) exposed over HTTP for remote convenience. It intentionally allows creating, editing, and uploading files of any type — **including `.php` files** — because that is the core purpose of a code/file editor. This is a deliberate design decision, not an oversight: a file editor that couldn't edit or upload PHP files would not be useful for editing PHP projects.
+
+Because of this, **Pheditor should be treated as equivalent in sensitivity to direct SSH/FTP access to your server**, and must never be exposed without proper protection. Specifically:
+
+1. **Change the default password immediately.** The default password (`admin`) is public knowledge (it's in this README and the source code). An instance left with the default password is equivalent to having no authentication at all.
+2. **Restrict access by IP** using the `ACCESS_IP` setting whenever possible, especially if the server has a static IP or VPN.
+3. **Do not expose Pheditor on a public/guessable URL** without additional protection — consider putting it behind HTTP Basic Auth at the web-server level, a VPN, or an SSH tunnel, in addition to Pheditor's own password.
+4. **Limit `PERMISSIONS`** to only what you actually need. If you don't need the terminal or upload features, remove `terminal` and `uploadfile` from the `PERMISSIONS` constant.
+5. **Treat any leaked password as a full server compromise**, not just "editor access" — because file edit + terminal access together are equivalent to shell access.
+
+If you are looking for a tool to expose to untrusted or semi-trusted users, Pheditor is **not** the right tool — it is built for a single trusted administrator only.
+
+---
+
 **NOTES**:
-1. The default password is `admin`. Please change the password after install or first login.
-2. As the script gives permission to edit files, it is recommended to keep the address secret or protected depending on the web-server you are using.
+1. **The default password is `admin`.** This is publicly known and provides no real protection on its own — you must change it before or immediately after first login. Pheditor will prompt you to change it on first use, but the prompt alone does not protect the instance until the password is actually changed.
+2. Since Pheditor grants full read/write access to files (including PHP files) and, optionally, terminal access, treat the URL and password with the same care you would give to an SSH credential. See [Security Model](#security-model) above for recommended hardening steps.
 
 ---
 
@@ -75,7 +93,7 @@ The settings are as below:
 
 **Using without password:**
 
-You can empty the `PASSWORD` constant in the source code to access the script without the password. But it is highly recommended to use it and change the default password after installation.
+You can empty the `PASSWORD` constant in the source code to access the script without the password. **This is strongly discouraged** and should only be used in a fully trusted, isolated environment (e.g. localhost-only, behind a VPN with its own authentication) — never on a publicly reachable host.
 
 ---
 
@@ -84,6 +102,8 @@ You can empty the `PASSWORD` constant in the source code to access the script wi
 There are eight permissions for users that is defined in `PERMISSIONS` constant. You can remove any of them as you need.
 
 Default value: `newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword,uploadfile,terminal,movefile`
+
+If you're unsure which permissions to enable, start with a minimal set and add more only as needed — especially for `terminal` and `uploadfile`, which grant the most powerful capabilities.
 
 ---
 **Thanks to:**
