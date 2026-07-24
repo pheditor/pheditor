@@ -620,7 +620,6 @@ if (isset($_GET['path'])) {
 
                 $dangerous_args = [
                     'find'     => ['-exec', '-execdir', '-ok', '-okdir', '-fprintf', '-fprint', '-delete'],
-                    'git'      => ['-c', '--exec-path', '--upload-pack', '--receive-pack', '--config'],
                     'php'      => ['-r', '-d', '-a', '-x', '-n', '-c', '-S', '-B', '-E', '-R'],
                     'tar'      => ['--checkpoint-action', '--to-command', '-I', '--use-compress-program', '--rsh-command', '-F', '--new-volume-script'],
                     'composer' => ['run-script', 'exec', 'config', 'create-project', 'global', '--working-dir'],
@@ -794,6 +793,18 @@ function terminal_tokenize($command)
 function terminal_extra_checks($binary, array $tokens)
 {
     if ($binary === 'git') {
+        $safe_git_subcommands = ['status', 'log', 'diff', 'show', 'branch', 'pull', 'fetch', 'remote', 'tag'];
+
+        if (isset($tokens[1]) === false || in_array($tokens[1], $safe_git_subcommands, true) === false) {
+            return "git subcommand not allowed. Allowed subcommands: " . implode(', ', $safe_git_subcommands);
+        }
+
+        foreach (array_slice($tokens, 2) as $t) {
+            if (strpos($t, '-') === 0) {
+                return "git flag not allowed: " . $t;
+            }
+        }
+
         foreach ($tokens as $t) {
             if (stripos($t, 'ext::') !== false || stripos($t, 'fd::') !== false) {
                 return "Custom git transport (ext::/fd::) is not allowed";
