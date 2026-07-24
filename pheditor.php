@@ -330,9 +330,11 @@ if (isset($_GET['path'])) {
 
     switch ($_POST['action']) {
         case 'open':
-            if (isset($_POST['file']) && file_exists(MAIN_DIR . $_POST['file'])) {
+            $file = MAIN_DIR . $_POST['file'];
+
+            if (isset($_POST['file']) && file_exists($file) && check_path($file)) {
                 die(json_success('OK', [
-                    'data' => file_get_contents(MAIN_DIR . $_POST['file']),
+                    'data' => file_get_contents($file),
                 ]));
             }
             break;
@@ -340,8 +342,9 @@ if (isset($_GET['path'])) {
         case 'save':
             $file = MAIN_DIR . $_POST['file'];
 
-            if (isset($_POST['file']) && isset($_POST['data']) && (file_exists($file) === false || is_writable($file))) {
+            if (isset($_POST['file']) && isset($_POST['data']) && check_path($file, false) && (file_exists($file) === false || is_writable($file))) {
                 if (file_exists($file) === false) {
+
                     if (in_array('newfile', $permissions) !== true) {
                         die(json_error('Permission denied', true));
                     }
@@ -377,6 +380,10 @@ if (isset($_GET['path'])) {
             }
 
             $dir = MAIN_DIR . $_POST['dir'];
+
+            if (check_path($dir, false) === false) {
+                die(json_error('Invalid path'));
+            }
 
             if (file_exists($dir) === false) {
                 mkdir($dir, DEFAULT_DIR_PERMISSION);
@@ -465,9 +472,13 @@ if (isset($_GET['path'])) {
             break;
 
         case 'rename':
-            if (isset($_POST['path']) && file_exists(MAIN_DIR . $_POST['path']) && isset($_POST['name']) && empty($_POST['name']) === false) {
+            if (isset($_POST['path']) && file_exists(MAIN_DIR . $_POST['path']) && check_path(MAIN_DIR . $_POST['path']) && isset($_POST['name']) && empty($_POST['name']) === false) {
                 $path = MAIN_DIR . $_POST['path'];
                 $new_path = str_replace(basename($path), '', dirname($path)) . DS . $_POST['name'];
+
+                if (check_path($new_path, false) === false) {
+                    die(json_error('Invalid destination name'));
+                }
 
                 if ($_POST['path'] == '/') {
                     echo json_error('Unable to rename main directory');
@@ -515,12 +526,12 @@ if (isset($_GET['path'])) {
                 die(json_error('Please select a file or a directory'));
             }
 
-            if (strpos($source, '/..') !== false || strpos($source, '\\..') !== false || strpos($destination, '/..') !== false || strpos($destination, '\\..') !== false) {
-                die(json_error('Invalid source or destination'));
-            }
-
             $source_path = MAIN_DIR . $source;
             $destination_path = MAIN_DIR . $destination;
+
+            if (check_path($source_path) === false || check_path($destination_path) === false) {
+                die(json_error('Invalid source or destination'));
+            }
 
             if (file_exists($source_path) === false || file_exists($destination_path) === false || is_file($source_path) === false || is_dir($destination_path) === false) {
                 die(json_error('Source or destination does not exists'));
@@ -545,17 +556,17 @@ if (isset($_GET['path'])) {
             $files = isset($_FILES['uploadfile']) ? $_FILES['uploadfile'] : [];
             $destination = isset($_POST['destination']) ? rtrim($_POST['destination']) : null;
 
-            if (empty($destination) === false && (strpos($destination, '/..') !== false || strpos($destination, '\\..') !== false)) {
+            $destination_path = MAIN_DIR . $destination;
+
+            if (check_path($destination_path) === false) {
                 die(json_error('Invalid file destination'));
             }
 
-            $destination = MAIN_DIR . $destination;
-
-            if (file_exists($destination) === false || is_dir($destination) === false) {
+            if (file_exists($destination_path) === false || is_dir($destination_path) === false) {
                 die(json_error('File destination does not exists'));
             }
 
-            if (is_writable($destination) !== true) {
+            if (is_writable($destination_path) !== true) {
                 die(json_error('File destination is not writable'));
             }
 
@@ -565,7 +576,7 @@ if (isset($_GET['path'])) {
                         die(json_error('Invalid file pattern: ' . htmlspecialchars($files['name'][$i])));
                     }
 
-                    move_uploaded_file($files['tmp_name'][$i], $destination . '/' . $files['name'][$i]);
+                    move_uploaded_file($files['tmp_name'][$i], $destination_path . '/' . $files['name'][$i]);
                 }
 
                 echo json_success('File' . (count($files['name']) > 1 ? 's' : null) . ' uploaded successfully');
@@ -745,7 +756,13 @@ function check_path($path, $check_existence = true)
 
     $real_path = realpath($path);
 
-    if (strpos($real_path, MAIN_DIR) === 0) {
+    if ($real_path === false) {
+        return false;
+    }
+
+    $root = rtrim(MAIN_DIR, DS);
+
+    if ($real_path === $root || strpos($real_path, $root . DS) === 0) {
         return true;
     }
 
