@@ -8,7 +8,7 @@
  * Release under MIT license
  */
 
-define('PASSWORD', 'ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413');
+define('PASSWORD', 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec');
 define('DS', DIRECTORY_SEPARATOR);
 define('MAIN_DIR', realpath(__DIR__));
 define('VERSION', '2.0.1');
@@ -888,11 +888,22 @@ function terminal_extra_checks($binary, array $tokens)
 
     if ($binary === 'chmod') {
         foreach ($tokens as $t) {
+            if (stripos($t, '--reference') === 0) {
+                return "chmod --reference is not allowed (bypasses setuid/setgid checks)";
+            }
             if (preg_match('/^[ugoa]*\+.*s/', $t) === 1) {
                 return "Setting setuid/setgid bit is not allowed";
             }
             if (preg_match('/^[1-7][0-7]{3}$/', $t) === 1) {
                 return "Setting setuid/setgid/sticky bit numerically is not allowed";
+            }
+        }
+    }
+
+    if ($binary === 'chown') {
+        foreach ($tokens as $t) {
+            if (stripos($t, '--reference') === 0) {
+                return "chown --reference is not allowed";
             }
         }
     }
