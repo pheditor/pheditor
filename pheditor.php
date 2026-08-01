@@ -897,21 +897,72 @@ function terminal_extra_checks($binary, array $tokens)
         }
     }
 
+    if ($binary === 'zip') {
+        $allowed_zip_flags = [
+            '-r',
+            '--recurse-paths',
+            '-q',
+            '--quiet',
+            '-v',
+            '--verbose',
+            '-j',
+            '--junk-paths',
+            '-m',
+            '--move',
+            '-d',
+            '--delete',
+            '-u',
+            '--update',
+            '-x',
+            '--exclude',
+            '-i',
+            '--include',
+            '-y',
+            '--symlinks',
+            '-T',
+        ];
+
+        return terminal_check_flag_allowlist('zip', $tokens, $allowed_zip_flags, ['/^-[0-9]$/']);
+    }
+
+    if ($binary === 'unzip') {
+        $allowed_unzip_flags = [
+            '-l',
+            '-v',
+            '-o',
+            '-n',
+            '-d',
+            '-x',
+            '-j',
+            '--junk-paths',
+            '-q',
+            '-t',
+        ];
+
+        return terminal_check_flag_allowlist('unzip', $tokens, $allowed_unzip_flags);
+    }
+
     return null;
 }
 
-function terminal_check_flag_allowlist($binary, array $tokens, array $allowed_flags)
+function terminal_check_flag_allowlist($binary, array $tokens, array $allowed_flags, array $allowed_patterns = [])
 {
     foreach (array_slice($tokens, 1) as $token) {
         if (strpos($token, '-') !== 0) {
             continue;
         }
 
+        foreach ($allowed_patterns as $pattern) {
+            if (preg_match($pattern, $token) === 1) {
+                continue 2;
+            }
+        }
+
         $eq_pos = strpos($token, '=');
         $flag = ($eq_pos === false) ? $token : substr($token, 0, $eq_pos);
 
         if (in_array($flag, $allowed_flags, true) === false) {
-            return "Flag not allowed for {$binary}: " . $flag;
+            return "Flag not allowed for {$binary}: " . $token;
         }
     }
 
