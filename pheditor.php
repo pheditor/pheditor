@@ -8,7 +8,7 @@
  * Release under MIT license
  */
 
-define('PASSWORD', 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec');
+define('PASSWORD', 'ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413');
 define('DS', DIRECTORY_SEPARATOR);
 define('MAIN_DIR', realpath(__DIR__));
 define('VERSION', '2.0.1');
@@ -22,7 +22,7 @@ define('WORD_WRAP', true);
 define('PERMISSIONS', 'newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword,uploadfile,terminal,movefile'); // empty means all
 define('PATTERN_FILES', '/^[A-Za-z0-9-_.\/]*\.(txt|php|htm|html|js|css|tpl|md|xml|json)$/i'); // empty means no pattern
 define('PATTERN_DIRECTORIES', '/^((?!backup).)*$/i'); // empty means no pattern
-define('TERMINAL_COMMANDS', 'ls,ll,cp,rm,mv,whoami,pidof,pwd,whereis,kill,php,date,cd,mkdir,chmod,chown,rmdir,touch,cat,git,find,grep,echo,tar,zip,unzip,whatis,df,help,locate,pkill,du,updatedb,composer,exit');
+define('TERMINAL_COMMANDS', 'ls,ll,cp,rm,mv,whoami,pidof,pwd,whereis,kill,date,cd,mkdir,chmod,chown,rmdir,touch,cat,git,find,grep,echo,tar,zip,unzip,whatis,df,help,locate,pkill,du,updatedb,composer,exit');
 define('EDITOR_THEME', ''); // e.g. monokai
 define('DEFAULT_DIR_PERMISSION', 0755);
 define('DEFAULT_FILE_PERMISSION', 0644);
@@ -618,24 +618,6 @@ if (isset($_GET['path'])) {
                     exit;
                 }
 
-                $dangerous_args = [
-                    'find'     => ['-exec', '-execdir', '-ok', '-okdir', '-fprintf', '-fprint', '-delete'],
-                    'php'      => ['-r', '-d', '-a', '-x', '-n', '-c', '-S', '-B', '-E', '-R'],
-                    'tar'      => ['--checkpoint-action', '--to-command', '-I', '--use-compress-program', '--rsh-command', '-F', '--new-volume-script'],
-                    'composer' => ['run-script', 'exec', 'config', 'create-project', 'global', '--working-dir'],
-                ];
-
-                if (isset($dangerous_args[$binary])) {
-                    foreach ($tokens as $token) {
-                        foreach ($dangerous_args[$binary] as $bad_arg) {
-                            if (stripos($token, $bad_arg) === 0) {
-                                echo json_error("Argument not allowed: " . htmlspecialchars($token) . "\n");
-                                exit;
-                            }
-                        }
-                    }
-                }
-
                 $extra_error = terminal_extra_checks($binary, $tokens);
                 if ($extra_error !== null) {
                     echo json_error(htmlspecialchars($extra_error) . "\n");
@@ -643,6 +625,25 @@ if (isset($_GET['path'])) {
                 }
 
                 $cwd = (empty($dir) === false && is_dir($dir)) ? $dir : getcwd();
+
+                if ($binary === 'cd') {
+                    $target = isset($tokens[1]) ? $tokens[1] : (getenv('HOME') ?: DS);
+                    $is_absolute = (strpos($target, DS) === 0) || (DS === '\\' && preg_match('/^[a-zA-Z]:\\\\/', $target) === 1);
+                    $candidate = $is_absolute ? $target : $cwd . DS . $target;
+                    $resolved = realpath($candidate);
+
+                    if ($resolved === false || is_dir($resolved) === false) {
+                        echo json_error("cd: no such directory: " . htmlspecialchars($target) . "\n");
+                        exit;
+                    }
+
+                    echo json_success('OK', [
+                        'result'    => null,
+                        'dir'       => $resolved,
+                        'exit_code' => 0,
+                    ]);
+                    exit;
+                }
 
                 $env = [
                     'PATH' => getenv('PATH') ?: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
@@ -810,6 +811,79 @@ function terminal_extra_checks($binary, array $tokens)
                 return "Custom git transport (ext::/fd::) is not allowed";
             }
         }
+
+        return null;
+    }
+
+    if ($binary === 'composer') {
+        $safe_composer_subcommands = ['install', 'update', 'require', 'remove', 'show', 'outdated', 'validate', 'list', 'diagnose', 'licenses'];
+
+        if (isset($tokens[1]) === false || in_array($tokens[1], $safe_composer_subcommands, true) === false) {
+            return "composer subcommand not allowed. Allowed subcommands: " . implode(', ', $safe_composer_subcommands);
+        }
+
+        foreach (array_slice($tokens, 2) as $t) {
+            if (strpos($t, '-') === 0) {
+                return "composer flag not allowed: " . $t;
+            }
+        }
+
+        return null;
+    }
+
+    if ($binary === 'find') {
+        $allowed_find_flags = [
+            '-name',
+            '-iname',
+            '-path',
+            '-ipath',
+            '-type',
+            '-maxdepth',
+            '-mindepth',
+            '-size',
+            '-mtime',
+            '-mmin',
+            '-newer',
+            '-empty',
+            '-print',
+            '-print0',
+            '-not',
+            '-and',
+            '-or',
+        ];
+
+        return terminal_check_flag_allowlist($binary, $tokens, $allowed_find_flags);
+    }
+
+    if ($binary === 'tar') {
+        $allowed_tar_flags = [
+            '-c',
+            '--create',
+            '-x',
+            '--extract',
+            '--get',
+            '-t',
+            '--list',
+            '-f',
+            '--file',
+            '-v',
+            '--verbose',
+            '-z',
+            '--gzip',
+            '--gunzip',
+            '--ungzip',
+            '-j',
+            '--bzip2',
+            '-J',
+            '--xz',
+            '--exclude',
+            '-C',
+            '--directory',
+            '-k',
+            '--keep-old-files',
+        ];
+
+        return terminal_check_flag_allowlist($binary, $tokens, $allowed_tar_flags);
     }
 
     if ($binary === 'chmod') {
@@ -820,6 +894,24 @@ function terminal_extra_checks($binary, array $tokens)
             if (preg_match('/^[1-7][0-7]{3}$/', $t) === 1) {
                 return "Setting setuid/setgid/sticky bit numerically is not allowed";
             }
+        }
+    }
+
+    return null;
+}
+
+function terminal_check_flag_allowlist($binary, array $tokens, array $allowed_flags)
+{
+    foreach (array_slice($tokens, 1) as $token) {
+        if (strpos($token, '-') !== 0) {
+            continue;
+        }
+
+        $eq_pos = strpos($token, '=');
+        $flag = ($eq_pos === false) ? $token : substr($token, 0, $eq_pos);
+
+        if (in_array($flag, $allowed_flags, true) === false) {
+            return "Flag not allowed for {$binary}: " . $flag;
         }
     }
 
