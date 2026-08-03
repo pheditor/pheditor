@@ -123,9 +123,9 @@ if (empty(ACCESS_IP) === false && ACCESS_IP != $_SERVER['REMOTE_ADDR']) {
 }
 
 if (file_exists(LOG_FILE)) {
-    $log = unserialize(file_get_contents(LOG_FILE));
+    $log = unserialize(file_get_contents(LOG_FILE), ['allowed_classes' => false]);
 
-    if (empty($log)) {
+    if ($log === false || empty($log)) {
         $log = [];
     }
 
