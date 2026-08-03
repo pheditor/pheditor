@@ -403,6 +403,14 @@ if (isset($_GET['path'])) {
                 die(json_error('Permission denied'));
             }
 
+            if (isset($_POST['current_password']) === false || empty($_POST['current_password'])) {
+                die(json_error('Current password is required'));
+            }
+
+            if (hash('sha512', $_POST['current_password']) !== PASSWORD) {
+                die(json_error('Current password is incorrect'));
+            }
+
             if (isset($_POST['password']) && empty($_POST['password']) === false) {
                 $contents = file(__FILE__);
                 $password_hash = hash('sha512', $_POST['password']);
@@ -2214,15 +2222,24 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             });
 
             $("#changePasswordModal .change-password-confirm").click(function() {
-                var password = $("#changePasswordModal input").val();
+                var currentPassword = $("#changePasswordModal .current-password").val(),
+                    newPassword = $("#changePasswordModal input[name=new_password]").val();
 
-                if (password != null && password.length > 0) {
-                    $(this).prop("disabled", true);
+                if (currentPassword == null || currentPassword.length < 1) {
+                    alertBox("Error", "Please enter your current password", "yellow");
+                    return;
+                }
+
+                if (newPassword != null && newPassword.length > 0) {
+                    let changePasswordConfirmButton = $(this);
+
+                    changePasswordConfirmButton.prop("disabled", true);
 
                     $.post("<?= $_SERVER['SCRIPT_NAME'] ?>", {
                         action: "password",
                         token: token,
-                        password: password
+                        current_password: currentPassword,
+                        password: newPassword
                     }, function(data) {
                         alertBox(data.error ? "Error" : "Success", data.message, data.error ? "red" : "green");
 
@@ -2232,7 +2249,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                             }, 1000);
                         }
 
-                        $(this).prop("disabled", false);
+                        changePasswordConfirmButton.prop("disabled", false);
                     });
                 } else {
                     alertBox("Error", "Please enter new password", "yellow");
@@ -2476,8 +2493,12 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Current password</label>
+                        <input name="current_password" type="password" value="" class="form-control current-password">
+                    </div>
                     <div>
-                        <p>Please enter your new password.</p>
+                        <label class="form-label">New password</label>
                         <input name="new_password" type="password" value="" class="form-control">
                     </div>
                 </div>
