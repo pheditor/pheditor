@@ -895,15 +895,20 @@ function terminal_extra_checks($binary, array $tokens)
     }
 
     if ($binary === 'chmod') {
-        foreach ($tokens as $t) {
-            if (stripos($t, '--reference') === 0) {
-                return "chmod --reference is not allowed (bypasses setuid/setgid checks)";
+        foreach (array_slice($tokens, 1) as $t) {
+            if (stripos($t, '--') === 0) {
+                return "chmod long options are not allowed";
             }
-            if (preg_match('/^[ugoa]*\+.*s/', $t) === 1) {
-                return "Setting setuid/setgid bit is not allowed";
+            if ($t[0] === '-') {
+                if (!preg_match('/^-[Rvc]+$/D', $t)) return "chmod flag not allowed: $t";
+                continue;
             }
-            if (preg_match('/^[1-7][0-7]{3}$/', $t) === 1) {
-                return "Setting setuid/setgid/sticky bit numerically is not allowed";
+            $numeric  = '/^0?[0-7]{3}$/D';
+            $symbolic = '/^([ugoa]*[-+=][rwxX]*)(,[ugoa]*[-+=][rwxX]*)*$/D';
+            if (preg_match($numeric, $t) !== 1 && preg_match($symbolic, $t) !== 1) {
+                if (preg_match('/^[0-7]+$|^[ugoa]*[-+=]/', $t) === 1) {
+                    return "Unsupported chmod mode";
+                }
             }
         }
     }
