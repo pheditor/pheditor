@@ -11,7 +11,7 @@
 define('PASSWORD', 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec');
 define('DS', DIRECTORY_SEPARATOR);
 define('MAIN_DIR', realpath(__DIR__));
-define('VERSION', '2.1.1');
+define('VERSION', '2.1.2');
 define('LOG_FILE', MAIN_DIR . DS . '.phedlog');
 define('SHOW_PHP_SELF', false);
 define('SHOW_HIDDEN_FILES', false);
