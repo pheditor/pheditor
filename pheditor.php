@@ -22,7 +22,7 @@ define('WORD_WRAP', true);
 define('PERMISSIONS', 'newfile,newdir,editfile,deletefile,deletedir,renamefile,renamedir,changepassword,uploadfile,terminal,movefile'); // empty means all
 define('PATTERN_FILES', '/^[A-Za-z0-9-_.\/]*\.(txt|php|htm|html|js|css|tpl|md|xml|json)$/i'); // empty means no pattern
 define('PATTERN_DIRECTORIES', '/^((?!backup).)*$/i'); // empty means no pattern
-define('TERMINAL_COMMANDS', 'ls,ll,cp,rm,mv,whoami,pidof,pwd,whereis,kill,date,cd,mkdir,chmod,chown,rmdir,touch,cat,git,find,grep,echo,tar,zip,unzip,whatis,df,help,locate,pkill,du,updatedb,composer,exit');
+define('TERMINAL_COMMANDS', 'ls,ll,cp,rm,mv,whoami,pidof,pwd,whereis,kill,date,cd,mkdir,chmod,chown,rmdir,touch,cat,git,find,grep,echo,tar,zip,unzip,whatis,df,help,locate,pkill,du,updatedb,exit');
 define('EDITOR_THEME', ''); // e.g. monokai
 define('DEFAULT_DIR_PERMISSION', 0755);
 define('DEFAULT_FILE_PERMISSION', 0644);
