@@ -256,7 +256,7 @@ if (isset($_GET['path'])) {
             $dir_path = str_replace([MAIN_DIR, DS], ['', '/'], $dir . DS . $file . DS);
 
             $list[] = [
-                'text' => $file,
+                'text' => htmlspecialchars($file, ENT_QUOTES, 'UTF-8'),
                 'icon' => 'far fa-folder',
                 'children' => true,
                 'a_attr' => [
@@ -271,7 +271,7 @@ if (isset($_GET['path'])) {
             $file_path = str_replace([MAIN_DIR, DS], ['', '/'], $dir . DS . $file);
 
             $list[] = [
-                'text' => $file,
+                'text' => htmlspecialchars($file, ENT_QUOTES, 'UTF-8'),
                 'icon' => 'far fa-file',
                 'a_attr' => [
                     'href' => '#' . $file_path,
@@ -385,6 +385,10 @@ if (isset($_GET['path'])) {
                 die(json_error('Invalid path'));
             }
 
+            if (preg_match('/^[A-Za-z0-9\-_. ]+$/', basename($dir)) !== 1) {
+                die(json_error('Invalid directory name'));
+            }
+
             if (file_exists($dir) === false) {
                 mkdir($dir, DEFAULT_DIR_PERMISSION);
 
@@ -493,6 +497,10 @@ if (isset($_GET['path'])) {
                 } else if (is_dir($path)) {
                     if (in_array('renamedir', $permissions) !== true) {
                         die(json_error('Permission denied'));
+                    }
+
+                    if (preg_match('/^[A-Za-z0-9\-_. ]+$/', $_POST['name']) !== 1) {
+                        die(json_error('Invalid directory name'));
                     }
 
                     if (is_writable($path) === false) {
@@ -1564,7 +1572,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             });
 
             $(".dropdown .new-file").click(function(e, customPath) {
-                var path = $("#path").html();
+                var path = $("#path").text();
 
                 if (customPath) {
                     path = customPath;
@@ -1605,7 +1613,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             });
 
             $(".dropdown .new-dir").click(function(e, customPath) {
-                var path = $("#path").html();
+                var path = $("#path").text();
 
                 if (customPath) {
                     path = customPath;
@@ -1645,7 +1653,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             });
 
             $(".dropdown .save").click(function() {
-                var path = $("#path").html(),
+                var path = $("#path").text(),
                     data = editor.getValue();
 
                 if (path.length > 0) {
@@ -1671,7 +1679,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             });
 
             $(".dropdown .delete").click(function(e, customPath) {
-                var path = $("#path").html();
+                var path = $("#path").text();
 
                 if (customPath) {
                     path = customPath;
@@ -1697,7 +1705,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             });
 
             $(".dropdown .rename").click(function(e, customPath) {
-                var path = $("#path").html();
+                var path = $("#path").text();
 
                 if (customPath) {
                     path = customPath;
@@ -1739,7 +1747,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
             });
 
             $(".dropdown .reopen").click(function() {
-                var path = $("#path").html();
+                var path = $("#path").text();
 
                 if (path.length > 0) {
                     $(window).trigger("hashchange");
@@ -1832,7 +1840,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                             if (dir.length > 0) {
                                 editor.setValue("");
                                 $("#digest").val("");
-                                $("#path").html(hash);
+                                $("#path").text(hash);
                                 $(".dropdown").find(".save, .reopen, .close").addClass("disabled");
                                 $(".dropdown").find(".delete, .rename").removeClass("disabled");
                             }
@@ -1868,7 +1876,7 @@ $_SESSION['pheditor_token'] = bin2hex(random_bytes(32));
                                     }
 
                                     $("#editor").attr("data-file", hash);
-                                    $("#path").html(hash).hide().fadeIn(250);
+                                    $("#path").text(hash).hide().fadeIn(250);
                                     $(".dropdown").find(".save, .delete, .rename, .reopen, .close").removeClass("disabled");
 
                                     $("#loading").hide();
