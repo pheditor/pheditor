@@ -346,7 +346,7 @@ if (isset($_GET['path'])) {
                 if (file_exists($file) === false) {
 
                     if (in_array('newfile', $permissions) !== true) {
-                        die(json_error('Permission denied', true));
+                        die(json_error('Permission denied'));
                     }
 
                     file_put_contents($file, $_POST['data']);
@@ -463,7 +463,7 @@ if (isset($_GET['path'])) {
                     }
                 } else {
                     if (empty(PATTERN_FILES) === false && !preg_match(PATTERN_FILES, basename($_POST['path']))) {
-                        die(json_error('Invalid file patterna'));
+                        die(json_error('Invalid file pattern'));
                     }
 
                     file_to_history($path);
@@ -619,6 +619,11 @@ if (isset($_GET['path'])) {
                 $raw_command = $_POST['command'];
                 $dir         = $_POST['dir'];
 
+                if (empty($dir) === false && check_path($dir) === false) {
+                    echo json_error("Invalid directory\n");
+                    exit;
+                }
+
                 $tokens = terminal_tokenize($raw_command);
 
                 if ($tokens === false || count($tokens) === 0) {
@@ -654,7 +659,7 @@ if (isset($_GET['path'])) {
                     $candidate = $is_absolute ? $target : $cwd . DS . $target;
                     $resolved = realpath($candidate);
 
-                    if ($resolved === false || is_dir($resolved) === false) {
+                    if ($resolved === false || is_dir($resolved) === false || check_path($resolved) === false) {
                         echo json_error("cd: no such directory: " . htmlspecialchars($target) . "\n");
                         exit;
                     }
@@ -844,22 +849,6 @@ function terminal_extra_checks($binary, array $tokens)
 
         if (in_array($tokens[1], ['pull', 'fetch'], true) && count($tokens) > 2) {
             return "git {$tokens[1]} does not accept arguments";
-        }
-
-        return null;
-    }
-
-    if ($binary === 'composer') {
-        $safe_composer_subcommands = ['install', 'update', 'require', 'remove', 'show', 'outdated', 'validate', 'list', 'diagnose', 'licenses'];
-
-        if (isset($tokens[1]) === false || in_array($tokens[1], $safe_composer_subcommands, true) === false) {
-            return "composer subcommand not allowed. Allowed subcommands: " . implode(', ', $safe_composer_subcommands);
-        }
-
-        foreach (array_slice($tokens, 2) as $t) {
-            if (strpos($t, '-') === 0) {
-                return "composer flag not allowed: " . $t;
-            }
         }
 
         return null;
