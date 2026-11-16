@@ -834,6 +834,18 @@ function terminal_extra_checks($binary, array $tokens)
             }
         }
 
+        if ($tokens[1] === 'remote' && count($tokens) > 2) {
+            return "git remote does not accept arguments";
+        }
+
+        if (in_array($tokens[1], ['branch', 'tag'], true) && count($tokens) > 2) {
+            return "git {$tokens[1]} does not accept arguments (read-only listing only)";
+        }
+
+        if (in_array($tokens[1], ['pull', 'fetch'], true) && count($tokens) > 2) {
+            return "git {$tokens[1]} does not accept arguments";
+        }
+
         return null;
     }
 
