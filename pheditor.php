@@ -569,6 +569,10 @@ if (isset($_GET['path'])) {
             break;
 
         case 'upload-file':
+            if (in_array('uploadfile', $permissions) !== true) {
+                die(json_error('Permission denied'));
+            }
+
             $files = isset($_FILES['uploadfile']) ? $_FILES['uploadfile'] : [];
             $destination = isset($_POST['destination']) ? rtrim($_POST['destination']) : null;
 
@@ -586,13 +590,15 @@ if (isset($_GET['path'])) {
                 die(json_error('File destination is not writable'));
             }
 
-            if (is_array($files) && count($files) > 0) {
+            if (is_array($files) && isset($files['name']) && is_array($files['name']) && count($files['name']) > 0) {
                 for ($i = 0; $i < count($files['name']); $i += 1) {
-                    if (empty(PATTERN_FILES) === false && !preg_match(PATTERN_FILES, $files['name'][$i])) {
-                        die(json_error('Invalid file pattern: ' . htmlspecialchars($files['name'][$i])));
+                    $upload_name = basename($files['name'][$i]);
+
+                    if (empty(PATTERN_FILES) === false && !preg_match(PATTERN_FILES, $upload_name)) {
+                        die(json_error('Invalid file pattern: ' . htmlspecialchars($upload_name)));
                     }
 
-                    move_uploaded_file($files['tmp_name'][$i], $destination_path . '/' . $files['name'][$i]);
+                    move_uploaded_file($files['tmp_name'][$i], rtrim($destination_path, '/\\') . DS . $upload_name);
                 }
 
                 echo json_success('File' . (count($files['name']) > 1 ? 's' : null) . ' uploaded successfully');
